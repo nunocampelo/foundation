@@ -1,2 +1,2 @@
-# Foundation project - Showcase of problem solving algorithms (analysis)
+# incubator project - spawning new awesome projects
 

@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>pt.base.foundation</groupId>
-	<artifactId>foundation</artifactId>
+	<groupId>pt.base.incubator</groupId>
+	<artifactId>incubator</artifactId>
 	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
 	<name>foundation</name>
-	<description>Foundation project - Showcase of problem solving algorithms (analysis)</description>
+	<description>incubator project - spawning new awesome projects</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -58,11 +58,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-<!-- 				<configuration>
-					<jvmArguments>
-						-Djava.library.path=./lib
-					</jvmArguments>
-				</configuration> -->
 			</plugin>
 		</plugins>
 	</build>
