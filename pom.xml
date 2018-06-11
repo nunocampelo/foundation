@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 
 	<name>foundation</name>
-	<description>Foundation - A showcase of algoritms</description>
+	<description>Foundation - A showcase of problem solving algorithms (analysis)</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
