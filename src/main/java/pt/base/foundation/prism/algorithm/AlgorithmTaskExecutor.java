@@ -24,10 +24,29 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class AlgorithmTaskExecutor {
 
-	private static final int ALGORITHM_EXCUTION_TIMEOUT_MILIS = 5000;
+	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 300;
+
+	private TimeUnit algorithmTaskTimeoutTimeUnit = TimeUnit.MILLISECONDS;
+	private long algorithmTaskTimout = DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS;
 
 	@Autowired
 	private BeanFactory beanFactory;
+
+	public TimeUnit getAlgorithmTaskTimeoutTimeUnit() {
+		return algorithmTaskTimeoutTimeUnit;
+	}
+
+	public void setAlgorithmTaskTimeoutTimeUnit(TimeUnit algorithmTaskTimeoutTimeUnit) {
+		this.algorithmTaskTimeoutTimeUnit = algorithmTaskTimeoutTimeUnit;
+	}
+
+	public long getAlgorithmTaskTimout() {
+		return algorithmTaskTimout;
+	}
+
+	public void setAlgorithmTaskTimout(long algorithmTaskTimout) {
+		this.algorithmTaskTimout = algorithmTaskTimout;
+	}
 
 	public List<Object> execute(Object algorithm, List<Object> arguments) {
 
@@ -40,40 +59,52 @@ public class AlgorithmTaskExecutor {
 	}
 
 	public List<Map.Entry<Object, Object>> execute(Object algorithm, Supplier<Object> argumentSupplier,
-			int numberResults) {
+			int minNumberOfResults) {
 
-		if (numberResults <= 0) {
+		if (minNumberOfResults <= 0) {
 			throw new IllegalArgumentException("Number of results must be positive");
 		}
 		checkSupportedAlgorithmType(algorithm);
 
-		return doExecuteUntilNumberResults(algorithm, argumentSupplier, numberResults);
+		return doExecuteUntilAtLeastNumberOfResults(algorithm, argumentSupplier, minNumberOfResults);
 	}
 
 	private List<Object> doExecute(Object algorithm, List<Object> arguments) {
 
-		System.out.println(MessageFormat.format("New algorithm execution with {0} arguments", arguments.size()));
+		int numberOfArguments = arguments.size();
+		System.out.println(MessageFormat.format("New algorithm execution with {0} arguments", numberOfArguments));
 
-		final ExecutorService algorithmContextExecutor = produceExecutorService(arguments.size());
+		final ExecutorService algorithmContextExecutor = produceExecutorService(numberOfArguments);
 
 		final List<Future<Object>> resultsFuture = submitExecutions(algorithmContextExecutor, algorithm, arguments);
-		tryAwaitTermination(algorithmContextExecutor);
+		tryAwaitTermination(algorithmContextExecutor,
+				numberOfArguments * TimeUnit.MILLISECONDS.convert(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit));
 
 		return tryExtractResultsStream(resultsFuture).collect(Collectors.toList());
 	}
 
-	private List<Map.Entry<Object, Object>> doExecuteUntilNumberResults(Object algorithm,
-			Supplier<Object> argumentSupplier, int numberResults) {
+	private List<Map.Entry<Object, Object>> doExecuteUntilAtLeastNumberOfResults(Object algorithm,
+			Supplier<Object> argumentSupplier, int minNumberOfResults) {
 
-		int currentNumberResults = 0;
+		// Recursive implementation is quite slower
+		// List<Map.Entry<Object, Object>> results = new LinkedList<>();
+		// doGenerateNumberResultsRecursively(results, algorithm, argumentSupplier, numberResults);
+
+		return doGenerateAtLeastMinNumberOfResults(algorithm, argumentSupplier, minNumberOfResults);
+	}
+
+	private List<Map.Entry<Object, Object>> doGenerateAtLeastMinNumberOfResults(Object algorithm,
+			Supplier<Object> argumentSupplier, int minNumberOfResults) {
+
 		List<Map.Entry<Object, Object>> results = new LinkedList<>();
 
-		while (currentNumberResults < numberResults) {
+		int currentNumberResults = 0;
+		while (currentNumberResults < minNumberOfResults) {
 
 			System.out.println(MessageFormat.format("Currently have {0} results of wanted {1}", currentNumberResults,
-					numberResults));
+					minNumberOfResults));
 
-			List<Object> newArguments = produceArguments(argumentSupplier, numberResults - currentNumberResults);
+			List<Object> newArguments = produceArguments(argumentSupplier, minNumberOfResults);
 			List<Object> newResults = execute(algorithm, newArguments);
 
 			results.addAll(createEntryMapList(newArguments, newResults));
@@ -83,6 +114,29 @@ public class AlgorithmTaskExecutor {
 
 		return results;
 	}
+
+	// Recursive implementation is quite slower
+	// private void doGenerateNumberResultsRecursily(List<Map.Entry<Object, Object>> results, Object
+	// algorithm,
+	// Supplier<Object> argumentSupplier, int numberResults) {
+	//
+	// int currentNumberResults = results.size();
+	// if (currentNumberResults == numberResults) {
+	// return;
+	// }
+	//
+	// System.out.println(
+	// MessageFormat.format("Currently have {0} results of wanted {1}", currentNumberResults,
+	// numberResults));
+	//
+	// List<Object> newArguments = produceArguments(argumentSupplier, numberResults -
+	// currentNumberResults);
+	// List<Object> newResults = execute(algorithm, newArguments);
+	//
+	// results.addAll(createEntryMapList(newArguments, newResults));
+	//
+	// doGenerateNumberResultsRecursily(results, algorithm, argumentSupplier, numberResults);
+	// }
 
 	private List<Map.Entry<Object, Object>> createEntryMapList(List<Object> arguments, List<Object> results) {
 		return IntStream.range(0, arguments.size())
@@ -105,9 +159,9 @@ public class AlgorithmTaskExecutor {
 				.map(executionContext -> executerService.submit(executionContext)).collect(Collectors.toList());
 	}
 
-	private void tryAwaitTermination(ExecutorService executorService) {
+	private void tryAwaitTermination(ExecutorService executorService, long awaitTerminationMillis) {
 		try {
-			executorService.awaitTermination(ALGORITHM_EXCUTION_TIMEOUT_MILIS, TimeUnit.MILLISECONDS);
+			executorService.awaitTermination(awaitTerminationMillis, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
@@ -124,7 +178,7 @@ public class AlgorithmTaskExecutor {
 			}
 
 			try {
-				return t.get(ALGORITHM_EXCUTION_TIMEOUT_MILIS, TimeUnit.MILLISECONDS);
+				return t.get(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
