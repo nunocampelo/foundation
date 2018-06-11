@@ -1,1 +1,2 @@
-# Foundation project - A showcase of problem solving algorithms (algorithms)
+# Foundation project - Showcase of problem solving algorithms (analysis)
+

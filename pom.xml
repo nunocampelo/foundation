@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 
 	<name>foundation</name>
-	<description>Foundation - A showcase of problem solving algorithms (analysis)</description>
+	<description>Foundation project - Showcase of problem solving algorithms (analysis)</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -35,6 +35,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6</version>
+		</dependency>
+		<dependency>
 			<groupId>org.hyperic</groupId>
 			<artifactId>sigar</artifactId>
 			<version>1.6.4</version>
@@ -53,6 +58,11 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+<!-- 				<configuration>
+					<jvmArguments>
+						-Djava.library.path=./lib
+					</jvmArguments>
+				</configuration> -->
 			</plugin>
 		</plugins>
 	</build>
