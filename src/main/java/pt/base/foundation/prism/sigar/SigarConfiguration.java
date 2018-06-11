@@ -1,4 +1,4 @@
-package pt.base.foundation.prism.configuration;
+package pt.base.foundation.prism.sigar;
 
 import org.hyperic.sigar.Sigar;
 import org.springframework.context.annotation.Bean;

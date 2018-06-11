@@ -2,13 +2,14 @@ package pt.base.foundation.numeric.fitting;
 
 import java.util.Map;
 
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.fitting.PolynomialCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 @Service
-public class PolinomialFitter {
+public class PolynomialFitter {
 
 	public double[] fit(int degree, Map<Long, Long> observations) {
 
@@ -28,4 +29,11 @@ public class PolinomialFitter {
 		return fitter.fit(obs.toList());
 	}
 
+	public double[] error(Map<Long, Long> observations, double[] coeficients) {
+
+		PolynomialFunction polymonial = new PolynomialFunction(coeficients);
+
+		return observations.keySet().stream().mapToDouble(value -> observations.get(value) - polymonial.value(value))
+				.toArray();
+	}
 }
