@@ -1,6 +1,7 @@
 package pt.base.incubator.prism;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -13,6 +14,7 @@ import pt.base.incubator.numeric.regression.MultipleRegressionProcessor;
 import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 import pt.base.incubator.prism.algorithm.AlgorithmTaskExecutor;
 import pt.base.incubator.prism.algorithm.StandardLinearAlgorithm;
+import pt.base.incubator.prism.algorithm.StandardSixDegreeAlgorithm;
 
 @Component
 public class Prism {
@@ -32,9 +34,13 @@ public class Prism {
 	private StandardLinearAlgorithm standardQuadraticAlgorithm;
 
 	@Autowired
+	private StandardSixDegreeAlgorithm standardSixDegreeAlgorithm;
+
+	@Autowired
 	public void analyse() {
 
-		AbstractAlgorithm<Long> algorithm = standardLinearAlgorithm;
+		List<AbstractAlgorithm<Long>> algorithms =
+				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
 		System.out.println("Initiating PRISM, buckle up for some awesome computing...");
 
@@ -48,19 +54,20 @@ public class Prism {
 		// System.out.println(arguments.get(index) + ": " + cpuTimes.get(index));
 		// });
 
-		List<Entry<Long, Long>> results =
-				toLongEntryList(algorithmExecuter.execute((Consumer<Long>) algorithm::implementation,
-						algorithm::argumentProducer, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS));
+		algorithms.forEach(algorithm -> {
+			List<Entry<Long, Long>> results =
+					toLongEntryList(algorithmExecuter.execute((Consumer<Long>) algorithm::implementation,
+							algorithm::argumentProducer, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS));
 
-		System.out.println(results);
-
-		regressionProcessor.regress(results, 1);
-		regressionProcessor.regress(results, 2);
-		regressionProcessor.regress(results, 3);
-		regressionProcessor.regress(results, 4);
-		regressionProcessor.regress(results, 5);
-		regressionProcessor.regress(results, 6);
-		regressionProcessor.regress(results, 7);
+			System.out.println("Results: " + results);
+			regressionProcessor.regress(results, 1);
+			regressionProcessor.regress(results, 2);
+			regressionProcessor.regress(results, 3);
+			regressionProcessor.regress(results, 4);
+			regressionProcessor.regress(results, 5);
+			regressionProcessor.regress(results, 6);
+			regressionProcessor.regress(results, 7);
+		});
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})

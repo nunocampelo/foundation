@@ -24,7 +24,7 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class AlgorithmTaskExecutor {
 
-	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 300;
+	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 1000;
 
 	private TimeUnit algorithmTaskTimeoutTimeUnit = TimeUnit.MILLISECONDS;
 	private long algorithmTaskTimout = DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS;

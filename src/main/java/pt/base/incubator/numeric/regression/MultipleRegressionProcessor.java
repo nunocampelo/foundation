@@ -27,7 +27,7 @@ public class MultipleRegressionProcessor {
 
 		regression.newSampleData(y, x);
 
-		System.out.println(regression.calculateRSquared());
+		System.out.println("R-Squared: " + regression.calculateRSquared());
 		return regression.calculateRSquared();
 	}
 
