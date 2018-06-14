@@ -1,15 +1,16 @@
 package pt.base.incubator.prism;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import pt.base.incubator.numeric.fitting.PolynomialFitter;
+import pt.base.incubator.numeric.regression.MultipleRegressionProcessor;
+import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 import pt.base.incubator.prism.algorithm.AlgorithmTaskExecutor;
 import pt.base.incubator.prism.algorithm.StandardLinearAlgorithm;
 
@@ -19,7 +20,7 @@ public class Prism {
 	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 10;
 
 	@Autowired
-	public PolynomialFitter polinomialFitter;
+	public MultipleRegressionProcessor regressionProcessor;
 
 	@Autowired
 	private AlgorithmTaskExecutor algorithmExecuter;
@@ -28,24 +29,46 @@ public class Prism {
 	private StandardLinearAlgorithm standardLinearAlgorithm;
 
 	@Autowired
+	private StandardLinearAlgorithm standardQuadraticAlgorithm;
+
+	@Autowired
 	public void analyse() {
+
+		AbstractAlgorithm<Long> algorithm = standardLinearAlgorithm;
 
 		System.out.println("Initiating PRISM, buckle up for some awesome computing...");
 
-		List<Object> arguments = IntStream.range(0, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS)
-				.mapToObj(index -> standardLinearAlgorithm.argumentProducer()).collect(Collectors.toList());
+		// List<Object> arguments = IntStream.range(0, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS)
+		// .mapToObj(index -> algorithm.argumentProducer()).collect(Collectors.toList());
+		//
+		// List<Object> cpuTimes =
+		// algorithmExecuter.execute((Consumer<Long>) algorithm::implementation, arguments);
+		//
+		// IntStream.range(0, cpuTimes.size()).forEach(index -> {
+		// System.out.println(arguments.get(index) + ": " + cpuTimes.get(index));
+		// });
 
-		List<Object> cpuTimes =
-				algorithmExecuter.execute((Consumer<Long>) standardLinearAlgorithm::implementation, arguments);
-
-		IntStream.range(0, cpuTimes.size()).forEach(index -> {
-			System.out.println(arguments.get(index) + ": " + cpuTimes.get(index));
-		});
-
-		List<Map.Entry<Object, Object>> results =
-				algorithmExecuter.execute((Consumer<Long>) standardLinearAlgorithm::implementation,
-						standardLinearAlgorithm::argumentProducer, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS);
+		List<Entry<Long, Long>> results =
+				toLongEntryList(algorithmExecuter.execute((Consumer<Long>) algorithm::implementation,
+						algorithm::argumentProducer, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS));
 
 		System.out.println(results);
+
+		regressionProcessor.regress(results, 1);
+		regressionProcessor.regress(results, 2);
+		regressionProcessor.regress(results, 3);
+		regressionProcessor.regress(results, 4);
+		regressionProcessor.regress(results, 5);
+		regressionProcessor.regress(results, 6);
+		regressionProcessor.regress(results, 7);
+	}
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private List<Entry<Long, Long>> toLongEntryList(List<Entry<Object, Object>> source) {
+		List<Entry<Long, Long>> result = new LinkedList<>();
+
+		source.forEach(entry -> result.add(new SimpleEntry(entry.getKey(), entry.getValue())));
+
+		return result;
 	}
 }
