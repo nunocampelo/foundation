@@ -5,12 +5,10 @@ import java.util.AbstractMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -48,55 +46,48 @@ public class AlgorithmTaskExecutor {
 		this.algorithmTaskTimout = algorithmTaskTimout;
 	}
 
-	public List<Object> execute(Object algorithm, List<Object> arguments) {
+	public <A, R> List<R> execute(AbstractAlgorithm<A> algorithm, List<A> arguments) {
 
 		if (ObjectUtils.isEmpty(arguments)) {
 			throw new IllegalArgumentException("Arguments must not be empty");
 		}
-		checkSupportedAlgorithmType(algorithm);
 
 		return doExecute(algorithm, arguments);
 	}
 
-	public List<Map.Entry<Object, Object>> execute(Object algorithm, Supplier<Object> argumentSupplier,
-			int minNumberOfResults) {
+	public <A, R> List<Map.Entry<A, R>> execute(AbstractAlgorithm<A> algorithm, int minNumberOfResults) {
 
 		if (minNumberOfResults <= 0) {
 			throw new IllegalArgumentException("Number of results must be positive");
 		}
-		checkSupportedAlgorithmType(algorithm);
 
-		return doExecuteUntilAtLeastNumberOfResults(algorithm, argumentSupplier, minNumberOfResults);
+		return doExecuteUntilAtLeastNumberOfResults(algorithm, minNumberOfResults);
 	}
 
-	private List<Object> doExecute(Object algorithm, List<Object> arguments) {
+	private <A, R> List<R> doExecute(AbstractAlgorithm<A> algorithm, List<A> arguments) {
 
 		int numberOfArguments = arguments.size();
 		System.out.println(MessageFormat.format("New algorithm execution with {0} arguments", numberOfArguments));
 
 		final ExecutorService algorithmContextExecutor = produceExecutorService(numberOfArguments);
 
-		final List<Future<Object>> resultsFuture = submitExecutions(algorithmContextExecutor, algorithm, arguments);
+		final List<Future<R>> resultsFuture = submitExecutions(algorithmContextExecutor, algorithm, arguments);
 		tryAwaitTermination(algorithmContextExecutor,
 				numberOfArguments * TimeUnit.MILLISECONDS.convert(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit));
 
 		return tryExtractResultsStream(resultsFuture).collect(Collectors.toList());
 	}
 
-	private List<Map.Entry<Object, Object>> doExecuteUntilAtLeastNumberOfResults(Object algorithm,
-			Supplier<Object> argumentSupplier, int minNumberOfResults) {
+	private <A, R> List<Map.Entry<A, R>> doExecuteUntilAtLeastNumberOfResults(AbstractAlgorithm<A> algorithm,
+			int minNumberOfResults) {
 
-		// Recursive implementation is quite slower
-		// List<Map.Entry<Object, Object>> results = new LinkedList<>();
-		// doGenerateNumberResultsRecursively(results, algorithm, argumentSupplier, numberResults);
-
-		return doGenerateAtLeastMinNumberOfResults(algorithm, argumentSupplier, minNumberOfResults);
+		return doGenerateAtLeastMinNumberOfResults(algorithm, minNumberOfResults);
 	}
 
-	private List<Map.Entry<Object, Object>> doGenerateAtLeastMinNumberOfResults(Object algorithm,
-			Supplier<Object> argumentSupplier, int minNumberOfResults) {
+	private <A, R> List<Entry<A, R>> doGenerateAtLeastMinNumberOfResults(AbstractAlgorithm<A> algorithm,
+			int minNumberOfResults) {
 
-		List<Map.Entry<Object, Object>> results = new LinkedList<>();
+		List<Entry<A, R>> results = new LinkedList<>();
 
 		int currentNumberResults = 0;
 		while (currentNumberResults < minNumberOfResults) {
@@ -104,8 +95,8 @@ public class AlgorithmTaskExecutor {
 			System.out.println(MessageFormat.format("Currently have {0} results of wanted {1}", currentNumberResults,
 					minNumberOfResults));
 
-			List<Object> newArguments = produceArguments(argumentSupplier, minNumberOfResults);
-			List<Object> newResults = execute(algorithm, newArguments);
+			List<A> newArguments = produceArguments(algorithm::argumentProducer, minNumberOfResults);
+			List<R> newResults = execute(algorithm, newArguments);
 
 			results.addAll(createEntryMapList(newArguments, newResults));
 
@@ -115,37 +106,13 @@ public class AlgorithmTaskExecutor {
 		return results;
 	}
 
-	// Recursive implementation is quite slower
-	// private void doGenerateNumberResultsRecursily(List<Map.Entry<Object, Object>> results, Object
-	// algorithm,
-	// Supplier<Object> argumentSupplier, int numberResults) {
-	//
-	// int currentNumberResults = results.size();
-	// if (currentNumberResults == numberResults) {
-	// return;
-	// }
-	//
-	// System.out.println(
-	// MessageFormat.format("Currently have {0} results of wanted {1}", currentNumberResults,
-	// numberResults));
-	//
-	// List<Object> newArguments = produceArguments(argumentSupplier, numberResults -
-	// currentNumberResults);
-	// List<Object> newResults = execute(algorithm, newArguments);
-	//
-	// results.addAll(createEntryMapList(newArguments, newResults));
-	//
-	// doGenerateNumberResultsRecursily(results, algorithm, argumentSupplier, numberResults);
-	// }
-
-	private List<Map.Entry<Object, Object>> createEntryMapList(List<Object> arguments, List<Object> results) {
+	private <A, R> List<Entry<A, R>> createEntryMapList(List<A> arguments, List<R> results) {
 		return IntStream.range(0, arguments.size())
-				.mapToObj(
-						index -> new AbstractMap.SimpleEntry<Object, Object>(arguments.get(index), results.get(index)))
+				.mapToObj(index -> new AbstractMap.SimpleEntry<A, R>(arguments.get(index), results.get(index)))
 				.filter(entry -> !ObjectUtils.isEmpty(entry.getValue())).collect(Collectors.toList());
 	}
 
-	private List<Object> produceArguments(Supplier<Object> argumentProducer, int number) {
+	private <A> List<A> produceArguments(Supplier<A> argumentProducer, int number) {
 		return IntStream.range(0, number).mapToObj(index -> argumentProducer.get()).collect(Collectors.toList());
 	}
 
@@ -153,10 +120,12 @@ public class AlgorithmTaskExecutor {
 		return beanFactory.getBean(ExecutorService.class, maxThreads);
 	}
 
-	private List<Future<Object>> submitExecutions(ExecutorService executerService, Object algorithm,
-			List<Object> arguments) {
-		return (List<Future<Object>>) arguments.stream().map(arg -> this.produceExecutionContext(algorithm, arg))
-				.map(executionContext -> executerService.submit(executionContext)).collect(Collectors.toList());
+	@SuppressWarnings("unchecked")
+	private <A, R> List<Future<R>> submitExecutions(ExecutorService executerService, AbstractAlgorithm<A> algorithm,
+			List<A> arguments) {
+		return arguments.stream().map(arg -> this.produceExecutionContext(algorithm, arg))
+				.map(executionContext -> (Future<R>) executerService.submit(executionContext))
+				.collect(Collectors.toList());
 	}
 
 	private void tryAwaitTermination(ExecutorService executorService, long awaitTerminationMillis) {
@@ -169,7 +138,7 @@ public class AlgorithmTaskExecutor {
 		}
 	}
 
-	private Stream<Object> tryExtractResultsStream(List<Future<Object>> resultsFuture) {
+	private <R> Stream<R> tryExtractResultsStream(List<Future<R>> resultsFuture) {
 
 		return resultsFuture.stream().map(t -> {
 
@@ -187,14 +156,8 @@ public class AlgorithmTaskExecutor {
 		});
 	}
 
-	private AbstractAlgorithmTask produceExecutionContext(Object algorithm, Object argument) {
+	@SuppressWarnings("unchecked")
+	private <A, R> AbstractAlgorithmTask<A, R> produceExecutionContext(AbstractAlgorithm<A> algorithm, A argument) {
 		return beanFactory.getBean(AbstractAlgorithmTask.class, algorithm, argument);
-	}
-
-	private void checkSupportedAlgorithmType(Object obj) {
-		if (!(obj instanceof Function) && !(obj instanceof Consumer) && !(obj instanceof Runnable)
-				&& !(obj instanceof Callable)) {
-			throw new IllegalArgumentException("Algorithm must be of type Function, Consumer, Runnable or Callable");
-		}
 	}
 }

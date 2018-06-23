@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -55,11 +54,12 @@ public class Prism {
 		// });
 
 		algorithms.forEach(algorithm -> {
+
 			List<Entry<Long, Long>> results =
-					toLongEntryList(algorithmExecuter.execute((Consumer<Long>) algorithm::implementation,
-							algorithm::argumentProducer, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS));
+					toLongEntryList(algorithmExecuter.execute(algorithm, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS));
 
 			System.out.println("Results: " + results);
+
 			regressionProcessor.regress(results, 1);
 			regressionProcessor.regress(results, 2);
 			regressionProcessor.regress(results, 3);
@@ -71,7 +71,7 @@ public class Prism {
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	private List<Entry<Long, Long>> toLongEntryList(List<Entry<Object, Object>> source) {
+	private List<Entry<Long, Long>> toLongEntryList(List<Entry<Long, Object>> source) {
 		List<Entry<Long, Long>> result = new LinkedList<>();
 
 		source.forEach(entry -> result.add(new SimpleEntry(entry.getKey(), entry.getValue())));

@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 
 @Component
@@ -26,8 +27,8 @@ public class SigarManager {
 	@Bean
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	protected AbstractAlgorithmTask wrapperFactory(Object alg, Object arg) {
-		return new CpuTimedAlgorithmTask(sigar, alg, arg);
+	protected <A> AbstractAlgorithmTask<A, Long> wrapperFactory(AbstractAlgorithm<A> algorithm, A argument) {
+		return new CpuTimedAlgorithmTask<A>(sigar, algorithm, argument);
 	}
 
 	@Bean
