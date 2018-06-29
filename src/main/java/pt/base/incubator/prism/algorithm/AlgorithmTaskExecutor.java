@@ -81,12 +81,6 @@ public class AlgorithmTaskExecutor {
 	private <A, R> List<Map.Entry<A, R>> doExecuteUntilAtLeastNumberOfResults(AbstractAlgorithm<A> algorithm,
 			int minNumberOfResults) {
 
-		return doGenerateAtLeastMinNumberOfResults(algorithm, minNumberOfResults);
-	}
-
-	private <A, R> List<Entry<A, R>> doGenerateAtLeastMinNumberOfResults(AbstractAlgorithm<A> algorithm,
-			int minNumberOfResults) {
-
 		List<Entry<A, R>> results = new LinkedList<>();
 
 		int currentNumberResults = 0;
