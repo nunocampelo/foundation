@@ -4,26 +4,31 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
-import javax.management.ReflectionException;
+import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jmx.support.ConnectorServerFactoryBean;
 import org.springframework.stereotype.Component;
 
 import pt.base.incubator.numeric.regression.MultipleRegressionProcessor;
 import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
+import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 import pt.base.incubator.prism.algorithm.AlgorithmTaskExecutor;
+import pt.base.incubator.prism.algorithm.JMXAlgorithmTask;
 import pt.base.incubator.prism.algorithm.StandardLinearAlgorithm;
 import pt.base.incubator.prism.algorithm.StandardQuadraticAlgorithm;
 import pt.base.incubator.prism.algorithm.StandardSixDegreeAlgorithm;
@@ -31,6 +36,7 @@ import pt.base.incubator.prism.algorithm.StandardSixDegreeAlgorithm;
 @Component
 public class Prism {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
 	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 10;
 
 	@Autowired
@@ -54,16 +60,20 @@ public class Prism {
 	@Autowired
 	private StandardSixDegreeAlgorithm standardSixDegreeAlgorithm;
 
+	private MBeanServerConnection jmxServerConnection;
+
 	public void init() {
+
+		LOGGER.info("Initializing Prism Library...");
 
 		JMXServiceURL url;
 		try {
+
 			url = new JMXServiceURL(jmxServerConfiguration.getJmxServerUrl());
 			JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
 			jmxc.connect();
 
-			System.out.println(jmxc.getMBeanServerConnection()
-					.getAttribute(new javax.management.ObjectName("java.lang:type=OperatingSystem"), "ProcessCpuTime"));
+			jmxServerConnection = jmxc.getMBeanServerConnection();
 
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -71,51 +81,48 @@ public class Prism {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (AttributeNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InstanceNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MalformedObjectNameException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (MBeanException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ReflectionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 
 	public void analyse() {
 
+		LOGGER.info("PRISM analysing... buckle up for some awesome computing!");
+
 		List<AbstractAlgorithm<Long>> algorithms =
 				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
-
-		System.out.println("Initiating PRISM, buckle up for some awesome computing...");
-
 		List<Integer> degrees = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
 
 		algorithms.forEach(algorithm -> {
 
-			List<Entry<Long, Long>> results =
+			List<Entry<Long, Long>> cpuTimesList =
 					toLongEntryList(algorithmExecuter.execute(algorithm, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS));
+			cpuTimesList.sort(Comparator.comparing(Entry::getKey));
 
-			System.out.println("Results: " + results);
-			degrees.stream().map(degree -> regressionProcessor.regress(results, degree)).forEach(System.out::println);
+			LOGGER.info("Algorithm {}, CPU Times: {} ", algorithm, cpuTimesList);
+			degrees.forEach(degree -> {
+				LOGGER.info("Regression degree: {}, R-square: {}", degree,
+						regressionProcessor.regress(cpuTimesList, degree));
+			});
 		});
 
 	}
 
 	public void stop() {
+
+		LOGGER.info("Closing Prism, see you next time.");
+
 		try {
 			jmxServerFactoryBean.destroy();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Bean
+	@Lazy
+	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	protected <A> AbstractAlgorithmTask<A, Long> wrapperFactory(AbstractAlgorithm<A> algorithm, A argument) {
+		return new JMXAlgorithmTask<A>(jmxServerConnection, algorithm, argument);
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})

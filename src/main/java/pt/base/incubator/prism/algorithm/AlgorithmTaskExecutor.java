@@ -1,6 +1,5 @@
 package pt.base.incubator.prism.algorithm;
 
-import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,9 @@ import org.springframework.util.ObjectUtils;
 @Component
 public class AlgorithmTaskExecutor {
 
-	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 1000;
+	private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmTaskExecutor.class);
+
+	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 5000;
 
 	private TimeUnit algorithmTaskTimeoutTimeUnit = TimeUnit.MILLISECONDS;
 	private long algorithmTaskTimout = DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS;
@@ -67,13 +70,16 @@ public class AlgorithmTaskExecutor {
 	private <A, R> List<R> doExecute(AbstractAlgorithm<A> algorithm, List<A> arguments) {
 
 		int numberOfArguments = arguments.size();
-		System.out.println(MessageFormat.format("New algorithm execution with {0} arguments", numberOfArguments));
+
+		LOGGER.debug("New algorithm execution with {} arguments", numberOfArguments);
+		// System.out.println(MessageFormat.format("New algorithm execution with {0} arguments",
+		// numberOfArguments));
 
 		final ExecutorService algorithmContextExecutor = produceExecutorService(numberOfArguments);
 
 		final List<Future<R>> resultsFuture = submitExecutions(algorithmContextExecutor, algorithm, arguments);
 		tryAwaitTermination(algorithmContextExecutor,
-				numberOfArguments * TimeUnit.MILLISECONDS.convert(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit));
+				TimeUnit.MILLISECONDS.convert(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit));
 
 		return tryExtractResultsStream(resultsFuture).collect(Collectors.toList());
 	}
@@ -86,8 +92,10 @@ public class AlgorithmTaskExecutor {
 		int currentNumberResults = 0;
 		while (currentNumberResults < minNumberOfResults) {
 
-			System.out.println(MessageFormat.format("Currently have {0} results of wanted {1}", currentNumberResults,
-					minNumberOfResults));
+			LOGGER.debug("Currently have {} results of wanted {}", currentNumberResults, minNumberOfResults);
+			// System.out.println(MessageFormat.format("Currently have {0} results of wanted {1}",
+			// currentNumberResults,
+			// minNumberOfResults));
 
 			List<A> newArguments = produceArguments(algorithm::argumentProducer, minNumberOfResults);
 			List<R> newResults = execute(algorithm, newArguments);

@@ -9,10 +9,11 @@ public abstract class AbstractAlgorithm<A> {
 	protected Instant started;
 
 	private int currentLongArgumentIndex;
-	private long maxLongArgument = 1000000000000000L;
+	private long maxLongArgument = 1000000000L;
 
-	public void implementation(A argument) {
+	public boolean implementation(A argument) {
 		started = Instant.now();
+		return false;
 	}
 
 	public abstract A argumentProducer();
@@ -24,4 +25,5 @@ public abstract class AbstractAlgorithm<A> {
 	protected boolean hasTimedOut() {
 		return Duration.between(started, Instant.now()).toMillis() > millisTimeout;
 	}
+
 }
