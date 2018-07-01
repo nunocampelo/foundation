@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jmx.support.ConnectorServerFactoryBean;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,9 @@ import pt.base.incubator.prism.data.DataProcessor;
 
 @Component
 public class Prism {
+
+	public static final String JMX_PROFILE = "jmx";
+	public static final String SIGAR_PROFILE = "sigar";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
 	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 50;
@@ -92,8 +96,15 @@ public class Prism {
 
 		LOGGER.info("PRISM analysing... buckle up for some awesome computing!");
 
-		List<AbstractAlgorithm<Long>> algorithms =
-				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
+		// List<AbstractAlgorithm<Long>> algorithms =
+		// Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm,
+		// standardSixDegreeAlgorithm);
+
+		// List<AbstractAlgorithm<Long>> algorithms =
+		// Arrays.asList(standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
+
+		List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardSixDegreeAlgorithm);
+
 		List<Integer> degrees = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
 
 		algorithms.forEach(algorithm -> {
@@ -108,7 +119,7 @@ public class Prism {
 
 			degrees.forEach(degree -> {
 				LOGGER.info("Regression degree: {}, R-square: {}", degree,
-						regressionProcessor.regress(averagedCpuTimes, degree));
+						regressionProcessor.regress(cpuTimesList, degree));
 			});
 		});
 
@@ -127,6 +138,7 @@ public class Prism {
 
 	@Bean
 	@Lazy
+	@Profile(JMX_PROFILE)
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	protected <A> AbstractAlgorithmTask<A, Long> wrapperFactory(AbstractAlgorithm<A> algorithm, A argument) {
 		return new JMXAlgorithmTask<A>(jmxServerConnection, algorithm, argument);

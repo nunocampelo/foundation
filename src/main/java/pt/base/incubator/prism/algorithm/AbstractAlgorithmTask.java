@@ -51,7 +51,7 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 
 	@Override
 	public String toString() {
-		return "AbstractAlgorithmTask [status=" + status + ", algorithm=" + algorithm + ", argument=" + argument + "]";
+		return "Task [status=" + status + ", algorithm=" + algorithm + ", argument=" + argument + "]";
 	}
 
 	protected enum Status {

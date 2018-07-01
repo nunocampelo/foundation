@@ -1,12 +1,15 @@
 package pt.base.incubator.prism.sigar;
 
 import org.hyperic.sigar.Sigar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 
 public class CpuTimedAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(CpuTimedAlgorithmTask.class);
 	private Sigar sigar;
 
 	public CpuTimedAlgorithmTask(Sigar sigar, AbstractAlgorithm<A> algorithm, A argument) {
@@ -21,11 +24,11 @@ public class CpuTimedAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 			return null;
 		}
 
-		System.out.println("Running with arg: " + argument + ", on thread: " + Thread.currentThread());
+		LOGGER.debug("Running with arg: {}", argument);
 		execute();
 
 		long result = sigar.getThreadCpu().getTotal();
-		System.out.println("Finished with result: " + result + ", on thread: " + Thread.currentThread());
+		LOGGER.debug("Finished with result: {}", result);
 		return result > 0 ? result : null;
 	}
 }

@@ -1,11 +1,18 @@
+
+spring:
+  profiles:
+    active: jmx
+
+logging:
+  level:
+    root: info
+    pt.base.incubator: debug 
+
+
 jmx:
   server:
     host: localhost
     port: 8081
     
 
-logging:
-  level:
-    root: info
-    pt.base.incubator: debug 
       
