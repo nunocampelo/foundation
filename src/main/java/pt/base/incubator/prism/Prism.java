@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.management.MBeanServerConnection;
@@ -32,12 +32,13 @@ import pt.base.incubator.prism.algorithm.JMXAlgorithmTask;
 import pt.base.incubator.prism.algorithm.StandardLinearAlgorithm;
 import pt.base.incubator.prism.algorithm.StandardQuadraticAlgorithm;
 import pt.base.incubator.prism.algorithm.StandardSixDegreeAlgorithm;
+import pt.base.incubator.prism.data.DataProcessor;
 
 @Component
 public class Prism {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
+	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 50;
 
 	@Autowired
 	public ConnectorServerFactoryBean jmxServerFactoryBean;
@@ -59,6 +60,9 @@ public class Prism {
 
 	@Autowired
 	private StandardSixDegreeAlgorithm standardSixDegreeAlgorithm;
+
+	@Autowired
+	private DataProcessor dataProcessor;
 
 	private MBeanServerConnection jmxServerConnection;
 
@@ -96,12 +100,15 @@ public class Prism {
 
 			List<Entry<Long, Long>> cpuTimesList =
 					toLongEntryList(algorithmExecuter.execute(algorithm, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS));
-			cpuTimesList.sort(Comparator.comparing(Entry::getKey));
+			dataProcessor.sortByKey(cpuTimesList);
 
 			LOGGER.info("Algorithm {}, CPU Times: {} ", algorithm, cpuTimesList);
+			Map<Long, Long> averagedCpuTimes = dataProcessor.averageSameKeyResults(cpuTimesList);
+			LOGGER.info("Averaged CPU Times: {} ", averagedCpuTimes);
+
 			degrees.forEach(degree -> {
 				LOGGER.info("Regression degree: {}, R-square: {}", degree,
-						regressionProcessor.regress(cpuTimesList, degree));
+						regressionProcessor.regress(averagedCpuTimes, degree));
 			});
 		});
 
