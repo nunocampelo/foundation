@@ -9,7 +9,8 @@ public abstract class AbstractAlgorithm<A> {
 	protected Instant started;
 
 	private int currentLongArgumentIndex;
-	private long maxLongArgument = 1000000000L;
+	protected long maxLongArgument = 100000L;
+	protected long minLongArgument = 10L;
 
 	public boolean implementation(A argument) {
 		started = Instant.now();
@@ -19,7 +20,8 @@ public abstract class AbstractAlgorithm<A> {
 	public abstract A argumentProducer();
 
 	protected long defaultLongArgumentProducer() {
-		return (long) (Math.random() * (maxLongArgument / Math.pow(10, currentLongArgumentIndex++ % 5)));
+		return (long) (Math.random() * (maxLongArgument / Math.pow(10, currentLongArgumentIndex++ % 5)))
+				+ minLongArgument;
 	}
 
 	protected boolean hasTimedOut() {

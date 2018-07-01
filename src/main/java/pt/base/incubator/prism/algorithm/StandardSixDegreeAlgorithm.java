@@ -5,47 +5,49 @@ import org.springframework.stereotype.Component;
 @Component
 public class StandardSixDegreeAlgorithm extends AbstractAlgorithm<Long> {
 
+	public StandardSixDegreeAlgorithm() {
+		this.maxLongArgument = 20L;
+		this.minLongArgument = 3L;
+	}
+
 	@Override
 	public boolean implementation(Long argument) {
 		super.implementation(argument);
 
-		int i = 0, j = 0, k = 0, l = 0, m = 0, n = 0;
-
-		while (i < argument) {
+		for (int i = 0; i < argument; i++) {
 			if (hasTimedOut()) {
 				return false;
 			}
-			while (j < argument) {
+
+			for (int j = 0; j < argument; j++) {
 				if (hasTimedOut()) {
 					return false;
 				}
-				while (k < argument) {
+
+				for (int k = 0; k < argument; k++) {
 					if (hasTimedOut()) {
 						return false;
 					}
-					while (l < argument) {
+
+					for (int l = 0; l < argument; l++) {
 						if (hasTimedOut()) {
 							return false;
 						}
-						while (m < argument) {
+
+						for (int m = 0; m < argument; m++) {
 							if (hasTimedOut()) {
 								return false;
 							}
-							while (n < argument) {
+
+							for (int n = 0; n < argument; n++) {
 								if (hasTimedOut()) {
 									return false;
 								}
-								n++;
 							}
-							m++;
 						}
-						l++;
 					}
-					k++;
 				}
-				j++;
 			}
-			i++;
 		}
 
 		return true;
@@ -53,7 +55,7 @@ public class StandardSixDegreeAlgorithm extends AbstractAlgorithm<Long> {
 
 	@Override
 	public Long argumentProducer() {
-		return defaultLongArgumentProducer();
+		return (long) (Math.random() * maxLongArgument) + minLongArgument;
 	}
 
 	@Override

@@ -37,7 +37,7 @@ import pt.base.incubator.prism.algorithm.StandardSixDegreeAlgorithm;
 public class Prism {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 10;
+	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
 
 	@Autowired
 	public ConnectorServerFactoryBean jmxServerFactoryBean;

@@ -25,7 +25,7 @@ public class AlgorithmTaskExecutor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmTaskExecutor.class);
 
-	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 5000;
+	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 10000;
 
 	private TimeUnit algorithmTaskTimeoutTimeUnit = TimeUnit.MILLISECONDS;
 	private long algorithmTaskTimout = DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS;
@@ -72,8 +72,6 @@ public class AlgorithmTaskExecutor {
 		int numberOfArguments = arguments.size();
 
 		LOGGER.debug("New algorithm execution with {} arguments", numberOfArguments);
-		// System.out.println(MessageFormat.format("New algorithm execution with {0} arguments",
-		// numberOfArguments));
 
 		final ExecutorService algorithmContextExecutor = produceExecutorService(numberOfArguments);
 
@@ -93,9 +91,6 @@ public class AlgorithmTaskExecutor {
 		while (currentNumberResults < minNumberOfResults) {
 
 			LOGGER.debug("Currently have {} results of wanted {}", currentNumberResults, minNumberOfResults);
-			// System.out.println(MessageFormat.format("Currently have {0} results of wanted {1}",
-			// currentNumberResults,
-			// minNumberOfResults));
 
 			List<A> newArguments = produceArguments(algorithm::argumentProducer, minNumberOfResults);
 			List<R> newResults = execute(algorithm, newArguments);

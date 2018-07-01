@@ -5,23 +5,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class StandardQuadraticAlgorithm extends AbstractAlgorithm<Long> {
 
+	public StandardQuadraticAlgorithm() {
+		this.minLongArgument = 100L;
+	}
+
 	@Override
 	public boolean implementation(Long argument) {
 		super.implementation(argument);
 
-		int i = 0, j = 0;
-
-		while (i < argument) {
+		for (int i = 0; i < argument; i++) {
 			if (hasTimedOut()) {
 				return false;
 			}
-			while (j < argument) {
+			for (int j = 0; j < argument; j++) {
 				if (hasTimedOut()) {
 					return false;
 				}
-				j++;
 			}
-			i++;
 		}
 
 		return true;
