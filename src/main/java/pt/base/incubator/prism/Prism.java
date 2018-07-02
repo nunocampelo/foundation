@@ -6,7 +6,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.management.MBeanServerConnection;
@@ -42,7 +41,7 @@ public class Prism {
 	public static final String SIGAR_PROFILE = "sigar";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 50;
+	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 200;
 
 	@Autowired
 	public ConnectorServerFactoryBean jmxServerFactoryBean;
@@ -96,14 +95,13 @@ public class Prism {
 
 		LOGGER.info("PRISM analysing... buckle up for some awesome computing!");
 
-		// List<AbstractAlgorithm<Long>> algorithms =
-		// Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm,
-		// standardSixDegreeAlgorithm);
+		List<AbstractAlgorithm<Long>> algorithms =
+				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
 		// List<AbstractAlgorithm<Long>> algorithms =
 		// Arrays.asList(standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
-		List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardSixDegreeAlgorithm);
+		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardSixDegreeAlgorithm);
 
 		List<Integer> degrees = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
 
@@ -114,8 +112,14 @@ public class Prism {
 			dataProcessor.sortByKey(cpuTimesList);
 
 			LOGGER.info("Algorithm {}, CPU Times: {} ", algorithm, cpuTimesList);
-			Map<Long, Long> averagedCpuTimes = dataProcessor.averageSameKeyResults(cpuTimesList);
-			LOGGER.info("Averaged CPU Times: {} ", averagedCpuTimes);
+
+			// List<Entry<Long, Long>> withoutOutliers =
+			// dataProcessor.filterOutOutliers(cpuTimesList);
+			// LOGGER.info("CPU Times: {} ", withoutOutliers);
+			//
+			// Map<Long, Long> closestToMean =
+			// dataProcessor.getValuesClosestToMean(withoutOutliers);
+			// LOGGER.info("CPU Times: {} ", closestToMean);
 
 			degrees.forEach(degree -> {
 				LOGGER.info("Regression degree: {}, R-square: {}", degree,
