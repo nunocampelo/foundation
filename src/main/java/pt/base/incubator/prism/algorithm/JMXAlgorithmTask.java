@@ -33,11 +33,11 @@ public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 
 		boolean success = execute();
 
-		if (algorithm.hasTimedOut()) {
-			LOGGER.debug("Algorithm Task timeout");
-			setStatus(Status.CANCELED);
-			return null;
-		}
+		// if (algorithm.hasTimedOut()) {
+		// LOGGER.debug("Algorithm Task timeout");
+		// setStatus(Status.CANCELED);
+		// return null;
+		// }
 
 		long endCpuTime = getCurrentCpuTime();
 		cpuTime = endCpuTime - cpuTime;
@@ -45,7 +45,8 @@ public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 		LOGGER.debug("Executed with arg: {}, with result: {}, ended in: {}, terminated: {}", argument, cpuTime,
 				endCpuTime, success);
 
-		return cpuTime > 0 && success ? cpuTime : null;
+		result = cpuTime > 0 && success ? cpuTime : null;
+		return result;
 	}
 
 	private long getCurrentCpuTime() {

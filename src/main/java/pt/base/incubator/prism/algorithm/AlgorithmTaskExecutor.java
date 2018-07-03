@@ -20,12 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
+import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask.Status;
+
 @Component
 public class AlgorithmTaskExecutor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmTaskExecutor.class);
 
-	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 10000;
+	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 20000;
 
 	private TimeUnit algorithmTaskTimeoutTimeUnit = TimeUnit.MILLISECONDS;
 	private long algorithmTaskTimout = DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS;
@@ -70,16 +72,40 @@ public class AlgorithmTaskExecutor {
 	private <A, R> List<R> doExecute(AbstractAlgorithm<A> algorithm, List<A> arguments) {
 
 		int numberOfArguments = arguments.size();
-
 		LOGGER.debug("New algorithm execution with {} arguments", numberOfArguments);
 
 		final ExecutorService algorithmContextExecutor = produceExecutorService(numberOfArguments);
 
-		final List<Future<R>> resultsFuture = submitExecutions(algorithmContextExecutor, algorithm, arguments);
+		@SuppressWarnings("unchecked")
+		final List<AbstractAlgorithmTask<A, R>> tasks = arguments.stream()
+				.map(arg -> (AbstractAlgorithmTask<A, R>) this.produceExecutionContext(algorithm, arg))
+				.collect(Collectors.toList());
+
+		tasks.forEach(algorithmContextExecutor::submit);
+
 		tryAwaitTermination(algorithmContextExecutor,
 				TimeUnit.MILLISECONDS.convert(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit));
 
-		return tryExtractResultsStream(resultsFuture).collect(Collectors.toList());
+		return tryExtractResultsStream(tasks).collect(Collectors.toList());
+	}
+
+	private <A, R> Stream<R> tryExtractResultsStream(List<AbstractAlgorithmTask<A, R>> resultsFuture) {
+
+		return resultsFuture.stream().map(t -> {
+
+			R result = null;
+
+			try {
+				// t.wait(algorithmTaskTimout);
+				result = t.result;
+				t.setStatus(Status.CANCELED);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			return result;
+		});
 	}
 
 	private <A, R> List<Map.Entry<A, R>> doExecuteUntilAtLeastNumberOfResults(AbstractAlgorithm<A> algorithm,
@@ -91,6 +117,7 @@ public class AlgorithmTaskExecutor {
 		while (currentNumberResults < minNumberOfResults) {
 
 			LOGGER.debug("Currently have {} results of wanted {}", currentNumberResults, minNumberOfResults);
+			algorithm.reset();
 
 			List<A> newArguments = produceArguments(algorithm::argumentProducer, minNumberOfResults);
 			List<R> newResults = execute(algorithm, newArguments);
@@ -135,23 +162,26 @@ public class AlgorithmTaskExecutor {
 		}
 	}
 
-	private <R> Stream<R> tryExtractResultsStream(List<Future<R>> resultsFuture) {
-
-		return resultsFuture.stream().map(t -> {
-
-			if (!t.isDone()) {
-				return null;
-			}
-
-			try {
-				return t.get(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			return null;
-		});
-	}
+	// private <R> Stream<R> tryExtractResultsStream(List<Future<R>> resultsFuture) {
+	//
+	// return resultsFuture.stream().map(t -> {
+	//
+	// R result = null;
+	//
+	// if (!t.isDone()) {
+	// return null;
+	// }
+	//
+	// try {
+	// result = t.get(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit);
+	//
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
+	//
+	// return null;
+	// });
+	// }
 
 	@SuppressWarnings("unchecked")
 	private <A, R> AbstractAlgorithmTask<A, R> produceExecutionContext(AbstractAlgorithm<A> algorithm, A argument) {

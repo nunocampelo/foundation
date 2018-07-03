@@ -41,7 +41,7 @@ public class Prism {
 	public static final String SIGAR_PROFILE = "sigar";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 200;
+	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
 
 	@Autowired
 	public ConnectorServerFactoryBean jmxServerFactoryBean;

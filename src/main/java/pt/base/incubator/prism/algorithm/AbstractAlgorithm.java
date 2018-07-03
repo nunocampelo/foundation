@@ -1,20 +1,21 @@
 package pt.base.incubator.prism.algorithm;
 
-import java.time.Duration;
-import java.time.Instant;
-
 public abstract class AbstractAlgorithm<A> {
 
-	protected int millisTimeout = 5000;
-	protected Instant started;
+	protected boolean canceled;
 
 	private int currentLongArgumentIndex;
 	protected long maxLongArgument = 100000L;
 	protected long minLongArgument = 10L;
 
-	public boolean implementation(A argument) {
-		started = Instant.now();
-		return false;
+	public abstract boolean implementation(A argument);
+
+	public void cancel() {
+		this.canceled = true;
+	}
+
+	public void reset() {
+		this.canceled = false;
 	}
 
 	public abstract A argumentProducer();
@@ -24,8 +25,8 @@ public abstract class AbstractAlgorithm<A> {
 				+ minLongArgument;
 	}
 
-	protected boolean hasTimedOut() {
-		return Duration.between(started, Instant.now()).toMillis() > millisTimeout;
+	public boolean isCanceled() {
+		return canceled;
 	}
 
 }

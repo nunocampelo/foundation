@@ -12,6 +12,7 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 	private Status status = Status.CREATED;
 	protected AbstractAlgorithm<A> algorithm;
 	protected A argument;
+	public R result;
 
 	public AbstractAlgorithmTask(AbstractAlgorithm<A> algorithm, A argument) {
 		super();
@@ -40,13 +41,22 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 			return;
 		}
 
-		if (this.status == Status.CANCELED) {
-			LOGGER.debug("Status {} is final", Status.CANCELED);
+		if (this.status == Status.FINISHED) {
+			LOGGER.debug("Status {} is final cant change it to {}", Status.CANCELED, status);
 			return;
 		}
 
+		if (this.status == Status.CANCELED) {
+			LOGGER.debug("Status {} is final cant change it to {}", Status.CANCELED, status);
+			return;
+		}
+
+		LOGGER.debug("Setting status {} on {}", status, this);
 		this.status = status;
-		LOGGER.debug("{}", this);
+
+		if (status == Status.CANCELED) {
+			algorithm.cancel();
+		}
 	}
 
 	@Override
@@ -54,7 +64,7 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 		return "Task [status=" + status + ", algorithm=" + algorithm + ", argument=" + argument + "]";
 	}
 
-	protected enum Status {
+	public enum Status {
 		CREATED, STARTED, FINISHED, CANCELED;
 	}
 }

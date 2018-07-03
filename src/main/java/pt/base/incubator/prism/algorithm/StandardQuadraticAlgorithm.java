@@ -11,14 +11,13 @@ public class StandardQuadraticAlgorithm extends AbstractAlgorithm<Long> {
 
 	@Override
 	public boolean implementation(Long argument) {
-		super.implementation(argument);
 
 		for (int i = 0; i < argument; i++) {
-			if (hasTimedOut()) {
+			if (isCanceled()) {
 				return false;
 			}
 			for (int j = 0; j < argument; j++) {
-				if (hasTimedOut()) {
+				if (isCanceled()) {
 					return false;
 				}
 			}
