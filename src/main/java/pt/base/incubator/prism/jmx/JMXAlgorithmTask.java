@@ -1,4 +1,4 @@
-package pt.base.incubator.prism.algorithm;
+package pt.base.incubator.prism.jmx;
 
 import java.io.IOException;
 
@@ -12,6 +12,9 @@ import javax.management.ReflectionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
+import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 
 public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 

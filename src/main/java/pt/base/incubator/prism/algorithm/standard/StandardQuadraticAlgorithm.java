@@ -1,12 +1,15 @@
-package pt.base.incubator.prism.algorithm;
+package pt.base.incubator.prism.algorithm.standard;
 
 import org.springframework.stereotype.Component;
+
+import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 
 @Component
 public class StandardQuadraticAlgorithm extends AbstractAlgorithm<Long> {
 
 	public StandardQuadraticAlgorithm() {
-		this.minLongArgument = 100L;
+		this.maxLongArgument = 70000L;
+		this.minLongArgument = 1000L;
 	}
 
 	@Override
@@ -35,5 +38,4 @@ public class StandardQuadraticAlgorithm extends AbstractAlgorithm<Long> {
 	public String toString() {
 		return "StandardQuadraticAlgorithm";
 	}
-
 }

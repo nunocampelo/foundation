@@ -5,7 +5,7 @@ public abstract class AbstractAlgorithm<A> {
 	protected boolean canceled;
 
 	private int currentLongArgumentIndex;
-	protected long maxLongArgument = 100000L;
+	protected long maxLongArgument = 1000000L;
 	protected long minLongArgument = 10L;
 
 	public abstract boolean implementation(A argument);

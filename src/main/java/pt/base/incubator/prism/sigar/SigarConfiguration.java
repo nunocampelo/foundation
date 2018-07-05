@@ -20,13 +20,13 @@ import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 
 @Configuration
+@Profile(Prism.SIGAR_PROFILE)
 public class SigarConfiguration {
 
 	private Sigar sigar = new Sigar();
 
 	@Bean
 	@Lazy
-	@Profile(Prism.SIGAR_PROFILE)
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	protected <A> AbstractAlgorithmTask<A, Long> wrapperFactory(AbstractAlgorithm<A> algorithm, A argument) {
 		return new CpuTimedAlgorithmTask<A>(sigar, algorithm, argument);

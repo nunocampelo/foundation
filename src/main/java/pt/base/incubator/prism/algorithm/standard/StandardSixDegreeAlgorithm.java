@@ -1,6 +1,8 @@
-package pt.base.incubator.prism.algorithm;
+package pt.base.incubator.prism.algorithm.standard;
 
 import org.springframework.stereotype.Component;
+
+import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 
 @Component
 public class StandardSixDegreeAlgorithm extends AbstractAlgorithm<Long> {

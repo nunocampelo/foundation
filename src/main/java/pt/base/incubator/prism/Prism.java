@@ -1,37 +1,24 @@
 package pt.base.incubator.prism;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.Scope;
-import org.springframework.jmx.support.ConnectorServerFactoryBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 
 import pt.base.incubator.numeric.regression.MultipleRegressionProcessor;
 import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
-import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 import pt.base.incubator.prism.algorithm.AlgorithmTaskExecutor;
-import pt.base.incubator.prism.algorithm.JMXAlgorithmTask;
-import pt.base.incubator.prism.algorithm.StandardLinearAlgorithm;
-import pt.base.incubator.prism.algorithm.StandardQuadraticAlgorithm;
-import pt.base.incubator.prism.algorithm.StandardSixDegreeAlgorithm;
+import pt.base.incubator.prism.algorithm.standard.StandardLinearAlgorithm;
+import pt.base.incubator.prism.algorithm.standard.StandardQuadraticAlgorithm;
+import pt.base.incubator.prism.algorithm.standard.StandardSixDegreeAlgorithm;
 import pt.base.incubator.prism.data.DataProcessor;
 
 @Component
@@ -44,63 +31,34 @@ public class Prism {
 	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
 
 	@Autowired
-	public ConnectorServerFactoryBean jmxServerFactoryBean;
-
-	@Autowired
-	public JMXServerConfiguration jmxServerConfiguration;
-
-	@Autowired
-	public MultipleRegressionProcessor regressionProcessor;
-
-	@Autowired
-	private AlgorithmTaskExecutor algorithmExecuter;
-
-	@Autowired
 	private StandardLinearAlgorithm standardLinearAlgorithm;
-
 	@Autowired
 	private StandardQuadraticAlgorithm standardQuadraticAlgorithm;
-
 	@Autowired
 	private StandardSixDegreeAlgorithm standardSixDegreeAlgorithm;
 
 	@Autowired
+	private AlgorithmTaskExecutor algorithmExecuter;
+	@Autowired
 	private DataProcessor dataProcessor;
+	@Autowired
+	public MultipleRegressionProcessor regressionProcessor;
 
-	private MBeanServerConnection jmxServerConnection;
-
-	public void init() {
-
-		LOGGER.info("Initializing Prism Library...");
-
-		JMXServiceURL url;
-		try {
-
-			url = new JMXServiceURL(jmxServerConfiguration.getJmxServerUrl());
-			JMXConnector jmxc = JMXConnectorFactory.connect(url, null);
-			jmxc.connect();
-
-			jmxServerConnection = jmxc.getMBeanServerConnection();
-
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+	@Autowired
+	private ApplicationContext context;
 
 	public void analyse() {
 
-		LOGGER.info("PRISM analysing... buckle up for some awesome computing!");
+		LOGGER.info("Starting PRISM... Buckle up for some awesome computing!");
 
-		List<AbstractAlgorithm<Long>> algorithms =
-				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
+		// List<AbstractAlgorithm<Long>> algorithms =
+		// Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm,
+		// standardSixDegreeAlgorithm);
 
 		// List<AbstractAlgorithm<Long>> algorithms =
 		// Arrays.asList(standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
+		List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardQuadraticAlgorithm);
 		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardSixDegreeAlgorithm);
 
 		List<Integer> degrees = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
@@ -130,22 +88,8 @@ public class Prism {
 	}
 
 	public void stop() {
-
-		LOGGER.info("Closing Prism, see you next time.");
-
-		try {
-			jmxServerFactoryBean.destroy();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Bean
-	@Lazy
-	@Profile(JMX_PROFILE)
-	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	protected <A> AbstractAlgorithmTask<A, Long> wrapperFactory(AbstractAlgorithm<A> algorithm, A argument) {
-		return new JMXAlgorithmTask<A>(jmxServerConnection, algorithm, argument);
+		LOGGER.info("Stopping PRISM, see you next time...");
+		((ConfigurableApplicationContext) context).close();
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})

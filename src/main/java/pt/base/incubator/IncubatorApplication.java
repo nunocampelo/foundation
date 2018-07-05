@@ -14,7 +14,6 @@ public class IncubatorApplication {
 		ConfigurableApplicationContext context = SpringApplication.run(IncubatorApplication.class, args);
 
 		Prism prism = context.getBean(Prism.class);
-		prism.init();
 		prism.analyse();
 		prism.stop();
 	}

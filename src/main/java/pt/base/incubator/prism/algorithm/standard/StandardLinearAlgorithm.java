@@ -1,8 +1,10 @@
-package pt.base.incubator.prism.algorithm;
+package pt.base.incubator.prism.algorithm.standard;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 
 @Component
 public class StandardLinearAlgorithm extends AbstractAlgorithm<Long> {
