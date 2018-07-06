@@ -12,8 +12,8 @@ public class StandardLinearAlgorithm extends AbstractAlgorithm<Long> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(StandardLinearAlgorithm.class);
 
 	public StandardLinearAlgorithm() {
-		this.maxLongArgument = 10000000000L;
-		this.minLongArgument = 1000L;
+		this.maxLongArgument = 1000000000L;
+		this.minLongArgument = 10000000L;
 	}
 
 	@Override
@@ -36,6 +36,6 @@ public class StandardLinearAlgorithm extends AbstractAlgorithm<Long> {
 
 	@Override
 	public String toString() {
-		return "StandardLinearAlgorithm [canceled=" + canceled + "]";
+		return "StandardLinearAlgorithm[canceled=" + canceled + "]";
 	}
 }

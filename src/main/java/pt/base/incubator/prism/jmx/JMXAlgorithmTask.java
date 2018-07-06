@@ -36,12 +36,6 @@ public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 
 		boolean success = execute();
 
-		// if (algorithm.hasTimedOut()) {
-		// LOGGER.debug("Algorithm Task timeout");
-		// setStatus(Status.CANCELED);
-		// return null;
-		// }
-
 		long endCpuTime = getCurrentCpuTime();
 		cpuTime = endCpuTime - cpuTime;
 

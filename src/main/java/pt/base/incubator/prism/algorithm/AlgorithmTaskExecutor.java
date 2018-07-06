@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +26,7 @@ public class AlgorithmTaskExecutor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmTaskExecutor.class);
 
-	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 20000;
+	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 2000;
 
 	private TimeUnit algorithmTaskTimeoutTimeUnit = TimeUnit.MILLISECONDS;
 	private long algorithmTaskTimout = DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS;
@@ -86,26 +85,21 @@ public class AlgorithmTaskExecutor {
 		tryAwaitTermination(algorithmContextExecutor,
 				TimeUnit.MILLISECONDS.convert(algorithmTaskTimout, algorithmTaskTimeoutTimeUnit));
 
-		return tryExtractResultsStream(tasks).collect(Collectors.toList());
+		doCancelRunningAlgorithmTasks(tasks);
+		tasks.stream().filter(task -> task.getStatus() != Status.FINISHED && task.getStatus() != Status.CANCELED)
+				.map(AbstractAlgorithmTask::getAlgorithm).forEach(AbstractAlgorithm::cancel);
+
+		return doExtractResultsStream(tasks);
 	}
 
-	private <A, R> Stream<R> tryExtractResultsStream(List<AbstractAlgorithmTask<A, R>> resultsFuture) {
+	private <A, R> void doCancelRunningAlgorithmTasks(List<AbstractAlgorithmTask<A, R>> resultsFuture) {
+		resultsFuture.stream()
+				.filter(task -> task.getStatus() != Status.FINISHED && task.getStatus() != Status.CANCELED)
+				.map(AbstractAlgorithmTask::getAlgorithm).forEach(AbstractAlgorithm::cancel);
+	}
 
-		return resultsFuture.stream().map(t -> {
-
-			R result = null;
-
-			try {
-				// t.wait(algorithmTaskTimout);
-				result = t.result;
-				t.setStatus(Status.CANCELED);
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-
-			return result;
-		});
+	private <A, R> List<R> doExtractResultsStream(List<AbstractAlgorithmTask<A, R>> resultsFuture) {
+		return resultsFuture.stream().map(AbstractAlgorithmTask::getResult).collect(Collectors.toList());
 	}
 
 	private <A, R> List<Map.Entry<A, R>> doExecuteUntilAtLeastNumberOfResults(AbstractAlgorithm<A> algorithm,
@@ -153,11 +147,23 @@ public class AlgorithmTaskExecutor {
 	}
 
 	private void tryAwaitTermination(ExecutorService executorService, long awaitTerminationMillis) {
+
+		// executorService.shutdown();
+		//
+		// try {
+		// executorService.awaitTermination(awaitTerminationMillis, TimeUnit.MILLISECONDS);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// } finally {
+		// executorService.shutdownNow();
+		// }
+
+		executorService.shutdown();
 		try {
-			executorService.awaitTermination(awaitTerminationMillis, TimeUnit.MILLISECONDS);
+			if (!executorService.awaitTermination(awaitTerminationMillis, TimeUnit.MILLISECONDS)) {
+				executorService.shutdownNow();
+			}
 		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} finally {
 			executorService.shutdownNow();
 		}
 	}

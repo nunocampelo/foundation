@@ -1,9 +1,12 @@
 package pt.base.incubator.prism;
 
+import java.text.NumberFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -28,7 +31,7 @@ public class Prism {
 	public static final String SIGAR_PROFILE = "sigar";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
+	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 50;
 
 	@Autowired
 	private StandardLinearAlgorithm standardLinearAlgorithm;
@@ -51,17 +54,19 @@ public class Prism {
 
 		LOGGER.info("Starting PRISM... Buckle up for some awesome computing!");
 
-		// List<AbstractAlgorithm<Long>> algorithms =
-		// Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm,
-		// standardSixDegreeAlgorithm);
+		List<AbstractAlgorithm<Long>> algorithms =
+				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
 		// List<AbstractAlgorithm<Long>> algorithms =
 		// Arrays.asList(standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
-		List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardQuadraticAlgorithm);
+		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardLinearAlgorithm);
+		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardQuadraticAlgorithm);
 		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardSixDegreeAlgorithm);
 
 		List<Integer> degrees = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
+		NumberFormat percentageFormat = NumberFormat.getPercentInstance();
+		percentageFormat.setMinimumFractionDigits(3);
 
 		algorithms.forEach(algorithm -> {
 
@@ -79,9 +84,30 @@ public class Prism {
 			// dataProcessor.getValuesClosestToMean(withoutOutliers);
 			// LOGGER.info("CPU Times: {} ", closestToMean);
 
-			degrees.forEach(degree -> {
-				LOGGER.info("Regression degree: {}, R-square: {}", degree,
-						regressionProcessor.regress(cpuTimesList, degree));
+			// degrees.stream().map(degree -> regressionProcessor.regress(cpuTimesList, degree))
+			// .reduce((Double curr, Double acc) -> {
+			// LOGGER.info("Regression degree: {}, R-square: 0.9673595377025922");
+			// return 0D;
+			// });
+
+			Map<Integer, Double> test = new HashMap<>();
+
+			degrees.forEach(d -> {
+
+				Integer index = degrees.indexOf(d);
+				double rSquare = regressionProcessor.regress(cpuTimesList, d);
+				test.put(d, rSquare);
+
+				double ratio = 0;
+
+				if (index != 0) {
+					double prevRSquare = test.get(degrees.get(index - 1));
+					ratio = Math.abs(rSquare - prevRSquare) / prevRSquare;
+				}
+
+				LOGGER.info("Regression degree: {}, R-square: {}, Perc. change {}", d, rSquare,
+						percentageFormat.format(ratio));
+
 			});
 		});
 

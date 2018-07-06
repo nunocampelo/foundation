@@ -3,9 +3,7 @@ package pt.base.incubator.prism.jmx;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -68,7 +66,10 @@ public class JMXServerConfiguration {
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	protected ExecutorService generateExecutorService(int maxThreads) {
-		return new ThreadPoolExecutor(0, maxThreads, 0, TimeUnit.SECONDS, new SynchronousQueue<>());
+		// return new ThreadPoolExecutor(0, maxThreads, 0, TimeUnit.SECONDS, new
+		// SynchronousQueue<>());
+		// return Executors.newFixedThreadPool(6);
+		return Executors.newFixedThreadPool(1);
 	}
 
 	@Bean

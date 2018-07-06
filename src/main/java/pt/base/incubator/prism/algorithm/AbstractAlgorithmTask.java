@@ -9,29 +9,21 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAlgorithmTask.class);
 
-	private Status status = Status.CREATED;
-	protected AbstractAlgorithm<A> algorithm;
+	protected R result;
 	protected A argument;
-	public R result;
+	protected AbstractAlgorithm<A> algorithm;
+	private Status status = Status.CREATED;
 
-	public AbstractAlgorithmTask(AbstractAlgorithm<A> algorithm, A argument) {
-		super();
-
-		if (algorithm == null || argument == null) {
-			throw new IllegalStateException("Algorithm context must not be null");
-		}
-
-		this.algorithm = algorithm;
-		this.argument = argument;
+	public AbstractAlgorithm<A> getAlgorithm() {
+		return algorithm;
 	}
 
-	protected boolean execute() {
+	public Status getStatus() {
+		return status;
+	}
 
-		setStatus(Status.STARTED);
-		boolean executionSuccess = algorithm.implementation(argument);
-		setStatus(Status.FINISHED);
-
-		return executionSuccess;
+	public R getResult() {
+		return result;
 	}
 
 	protected void setStatus(Status status) {
@@ -57,6 +49,26 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 		if (status == Status.CANCELED) {
 			algorithm.cancel();
 		}
+	}
+
+	public AbstractAlgorithmTask(AbstractAlgorithm<A> algorithm, A argument) {
+		super();
+
+		if (algorithm == null || argument == null) {
+			throw new IllegalStateException("Algorithm context must not be null");
+		}
+
+		this.algorithm = algorithm;
+		this.argument = argument;
+	}
+
+	protected boolean execute() {
+
+		setStatus(Status.STARTED);
+		boolean executionSuccess = algorithm.implementation(argument);
+		setStatus(Status.FINISHED);
+
+		return executionSuccess;
 	}
 
 	@Override

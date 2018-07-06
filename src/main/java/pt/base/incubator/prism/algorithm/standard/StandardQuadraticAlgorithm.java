@@ -8,8 +8,8 @@ import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 public class StandardQuadraticAlgorithm extends AbstractAlgorithm<Long> {
 
 	public StandardQuadraticAlgorithm() {
-		this.maxLongArgument = 70000L;
-		this.minLongArgument = 1000L;
+		this.maxLongArgument = 50000L;
+		this.minLongArgument = 3000L;
 	}
 
 	@Override
@@ -36,6 +36,6 @@ public class StandardQuadraticAlgorithm extends AbstractAlgorithm<Long> {
 
 	@Override
 	public String toString() {
-		return "StandardQuadraticAlgorithm";
+		return "StandardQuadraticAlgorithm[canceled=" + canceled + "]";
 	}
 }
