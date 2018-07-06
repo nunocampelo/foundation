@@ -1,2 +1,2 @@
-# incubator project - spawning new awesome projects
+# incubator project - spawning new cool projects
 
