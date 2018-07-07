@@ -1,13 +1,12 @@
 
 spring:
   profiles:
-    active: sigar
+    active: sigar 
 
 logging:
   level:
     root: info
-    pt.base.incubator: debug 
-
+    pt.base.incubator: info 
 
 jmx:
   server:

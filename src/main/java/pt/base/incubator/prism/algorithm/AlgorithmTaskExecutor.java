@@ -27,7 +27,7 @@ public class AlgorithmTaskExecutor {
 
 	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 2000;
 
-	private boolean closed;
+	private boolean destroyed;
 	private TimeUnit algorithmTaskTimeoutTimeUnit = TimeUnit.MILLISECONDS;
 	private long algorithmTaskTimout = DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS;
 
@@ -105,7 +105,7 @@ public class AlgorithmTaskExecutor {
 		List<Entry<A, R>> results = new LinkedList<>();
 
 		int currentNumberResults = 0;
-		while (!closed && currentNumberResults < minNumberOfResults) {
+		while (!destroyed && currentNumberResults < minNumberOfResults) {
 
 			LOGGER.debug("Currently have {} results of wanted {}", currentNumberResults, minNumberOfResults);
 			algorithm.reset();
@@ -154,6 +154,6 @@ public class AlgorithmTaskExecutor {
 
 	@PreDestroy
 	private void shutdown() {
-		closed = true;
+		destroyed = true;
 	}
 }

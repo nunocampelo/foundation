@@ -27,16 +27,15 @@ public class SigarConfiguration {
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	protected <A> AbstractAlgorithmTask<A, Long> wrapperFactory(AbstractAlgorithm<A> algorithm, A argument) {
-		return new CpuTimedAlgorithmTask<A>(sigar, algorithm, argument);
+		return new SigarAlgorithmTask<A>(sigar, algorithm, argument);
 	}
 
 	@Bean
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	protected ExecutorService generateExecutorService(int numberExecutions) {
-		// return new ThreadPoolExecutor(numberExecutions, Math.min(numberExecutions, 6), 0,
-		// TimeUnit.SECONDS,
-		// new SynchronousQueue<>());
+		// return new ThreadPoolExecutor(0, Math.min(numberExecutions, 6), 0, TimeUnit.SECONDS, new
+		// SynchronousQueue<>());
 		return Executors.newFixedThreadPool(6);
 	}
 

@@ -8,8 +8,8 @@ import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 public class StandardSixDegreeAlgorithm extends AbstractAlgorithm<Long> {
 
 	public StandardSixDegreeAlgorithm() {
-		this.maxLongArgument = 50L;
-		this.minLongArgument = 10L;
+		this.maxLongArgument = 45L;
+		this.minLongArgument = 12L;
 	}
 
 	@Override
@@ -61,6 +61,6 @@ public class StandardSixDegreeAlgorithm extends AbstractAlgorithm<Long> {
 
 	@Override
 	public String toString() {
-		return "StandardSixDegreeAlgorithm";
+		return "StandardSixDegreeAlgorithm[canceled=" + canceled + "]";
 	}
 }

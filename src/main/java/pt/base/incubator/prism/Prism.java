@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import pt.base.incubator.numeric.regression.MultipleRegressionProcessor;
@@ -30,6 +31,7 @@ public class Prism {
 	public static final String JMX_PROFILE = "jmx";
 	public static final String SIGAR_PROFILE = "sigar";
 
+	private boolean destroyed;
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
 	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
 
@@ -50,22 +52,19 @@ public class Prism {
 	@Autowired(required = false)
 	private JMXServerConfiguration serverConf;
 
-	@Autowired
-	private ApplicationContext context;
-
 	public void analyse() {
 
 		LOGGER.info("Starting PRISM... Buckle up for some awesome computing!");
 
-		List<AbstractAlgorithm<Long>> algorithms =
-				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
+		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardLinearAlgorithm);
+		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardQuadraticAlgorithm);
+		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardSixDegreeAlgorithm);
 
 		// List<AbstractAlgorithm<Long>> algorithms =
 		// Arrays.asList(standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
-		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardLinearAlgorithm);
-		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardQuadraticAlgorithm);
-		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardSixDegreeAlgorithm);
+		List<AbstractAlgorithm<Long>> algorithms =
+				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
 		List<Integer> degrees = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
 		NumberFormat percentageFormat = NumberFormat.getPercentInstance();
@@ -92,6 +91,10 @@ public class Prism {
 			// LOGGER.info("Regression degree: {}, R-square: 0.9673595377025922");
 			// return 0D;
 			// });
+
+			if (destroyed) {
+				return;
+			}
 
 			Map<Integer, Double> test = new HashMap<>();
 
@@ -131,5 +134,10 @@ public class Prism {
 		source.forEach(entry -> result.add(new SimpleEntry(entry.getKey(), entry.getValue())));
 
 		return result;
+	}
+
+	@PreDestroy
+	private void shutdown() {
+		destroyed = true;
 	}
 }

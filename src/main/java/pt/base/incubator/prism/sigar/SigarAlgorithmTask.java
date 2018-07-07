@@ -8,12 +8,12 @@ import org.slf4j.LoggerFactory;
 import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
 import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 
-public class CpuTimedAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
+public class SigarAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CpuTimedAlgorithmTask.class);
 	private Sigar sigar;
+	private static final Logger LOGGER = LoggerFactory.getLogger(SigarAlgorithmTask.class);
 
-	public CpuTimedAlgorithmTask(Sigar sigar, AbstractAlgorithm<A> algorithm, A argument) {
+	public SigarAlgorithmTask(Sigar sigar, AbstractAlgorithm<A> algorithm, A argument) {
 		super(algorithm, argument);
 		this.sigar = sigar;
 	}
@@ -22,18 +22,21 @@ public class CpuTimedAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 	public Long call() throws Exception {
 
 		long cpuTime = getCurrentCpuTime();
-
 		LOGGER.debug("Running with arg: {}, stating at:{}", argument, cpuTime);
 
-		boolean success = execute();
+		boolean finished = execute();
 
 		long endCpuTime = getCurrentCpuTime();
 		cpuTime = endCpuTime - cpuTime;
 
-		LOGGER.debug("Executed with arg: {}, with result: {}, ended in: {}, terminated: {}", argument, cpuTime,
-				endCpuTime, success);
+		LOGGER.debug("Executed with arg: {}, with cpu time: {}, ended at: {}, finished: {}", argument, cpuTime,
+				endCpuTime, finished);
 
-		result = cpuTime > 0 && success ? cpuTime : null;
+		if (cpuTime <= 0L) {
+			LOGGER.info("Illegal CPU time found: {}, with arg: {}", cpuTime, argument);
+		}
+
+		result = finished && cpuTime > 0 ? cpuTime : null;
 		return result;
 	}
 
@@ -42,14 +45,9 @@ public class CpuTimedAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 		long cpuTime = 0L;
 
 		try {
-			cpuTime = sigar.getCpu().getTotal();
+			cpuTime = sigar.getThreadCpu().getTotal();
 		} catch (SigarException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-
-		if (cpuTime <= 0L) {
-			LOGGER.error("Illegal CPU time");
 		}
 
 		return cpuTime;

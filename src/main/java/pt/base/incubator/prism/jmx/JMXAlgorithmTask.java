@@ -32,17 +32,21 @@ public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 	public Long call() throws Exception {
 
 		long cpuTime = getCurrentCpuTime();
-		LOGGER.debug("Running with arg: {}, stating at:{}", argument, cpuTime);
+		LOGGER.debug("Running with arg: {}, stating at: {}", argument, cpuTime);
 
-		boolean success = execute();
+		boolean finished = execute();
 
 		long endCpuTime = getCurrentCpuTime();
 		cpuTime = endCpuTime - cpuTime;
 
-		LOGGER.debug("Executed with arg: {}, with result: {}, ended in: {}, terminated: {}", argument, cpuTime,
-				endCpuTime, success);
+		LOGGER.debug("Executed with arg: {}, with cpu time: {}, ended at: {}, finished: {}", argument, cpuTime,
+				endCpuTime, finished);
 
-		result = cpuTime > 0 && success ? cpuTime : null;
+		if (cpuTime <= 0L) {
+			LOGGER.info("Illegal CPU time found: {}, with arg: {}", cpuTime, argument);
+		}
+
+		result = finished && cpuTime > 0 ? cpuTime : null;
 		return result;
 	}
 
@@ -56,10 +60,6 @@ public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 		} catch (AttributeNotFoundException | InstanceNotFoundException | MalformedObjectNameException | MBeanException
 				| ReflectionException | IOException e) {
 			e.printStackTrace();
-		}
-
-		if (cpuTime <= 0L) {
-			LOGGER.error("Illegal CPU time");
 		}
 
 		return cpuTime;
