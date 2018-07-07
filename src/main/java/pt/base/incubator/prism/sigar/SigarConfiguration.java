@@ -1,9 +1,7 @@
 package pt.base.incubator.prism.sigar;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
 
 import javax.annotation.PreDestroy;
 
@@ -35,8 +33,11 @@ public class SigarConfiguration {
 	@Bean
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	protected ExecutorService generateExecutorService(int maxThreads) {
-		return new ThreadPoolExecutor(0, Math.min(maxThreads, 6), 0, TimeUnit.SECONDS, new SynchronousQueue<>());
+	protected ExecutorService generateExecutorService(int numberExecutions) {
+		// return new ThreadPoolExecutor(numberExecutions, Math.min(numberExecutions, 6), 0,
+		// TimeUnit.SECONDS,
+		// new SynchronousQueue<>());
+		return Executors.newFixedThreadPool(6);
 	}
 
 	@PreDestroy

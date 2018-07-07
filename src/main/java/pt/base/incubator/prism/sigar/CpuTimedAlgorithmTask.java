@@ -1,6 +1,7 @@
 package pt.base.incubator.prism.sigar;
 
 import org.hyperic.sigar.Sigar;
+import org.hyperic.sigar.SigarException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,14 +21,37 @@ public class CpuTimedAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 	@Override
 	public Long call() throws Exception {
 
-		LOGGER.debug("Running with arg: {}", argument);
+		long cpuTime = getCurrentCpuTime();
+
+		LOGGER.debug("Running with arg: {}, stating at:{}", argument, cpuTime);
 
 		boolean success = execute();
-		long cpuTime = sigar.getThreadCpu().getTotal();
 
-		LOGGER.debug("Executed with arg: {}, with result: {}, terminated: {}", argument, cpuTime, success);
+		long endCpuTime = getCurrentCpuTime();
+		cpuTime = endCpuTime - cpuTime;
+
+		LOGGER.debug("Executed with arg: {}, with result: {}, ended in: {}, terminated: {}", argument, cpuTime,
+				endCpuTime, success);
 
 		result = cpuTime > 0 && success ? cpuTime : null;
 		return result;
+	}
+
+	private long getCurrentCpuTime() {
+
+		long cpuTime = 0L;
+
+		try {
+			cpuTime = sigar.getCpu().getTotal();
+		} catch (SigarException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (cpuTime <= 0L) {
+			LOGGER.error("Illegal CPU time");
+		}
+
+		return cpuTime;
 	}
 }

@@ -6,7 +6,7 @@ spring:
 logging:
   level:
     root: info
-    pt.base.incubator: info
+    pt.base.incubator: debug 
 
 
 jmx:

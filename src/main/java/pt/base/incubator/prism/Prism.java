@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 
 import pt.base.incubator.numeric.regression.MultipleRegressionProcessor;
@@ -23,6 +22,7 @@ import pt.base.incubator.prism.algorithm.standard.StandardLinearAlgorithm;
 import pt.base.incubator.prism.algorithm.standard.StandardQuadraticAlgorithm;
 import pt.base.incubator.prism.algorithm.standard.StandardSixDegreeAlgorithm;
 import pt.base.incubator.prism.data.DataProcessor;
+import pt.base.incubator.prism.jmx.JMXServerConfiguration;
 
 @Component
 public class Prism {
@@ -46,6 +46,9 @@ public class Prism {
 	private DataProcessor dataProcessor;
 	@Autowired
 	public MultipleRegressionProcessor regressionProcessor;
+
+	@Autowired(required = false)
+	private JMXServerConfiguration serverConf;
 
 	@Autowired
 	private ApplicationContext context;
@@ -115,7 +118,10 @@ public class Prism {
 
 	public void stop() {
 		LOGGER.info("Stopping PRISM, see you next time...");
-		((ConfigurableApplicationContext) context).close();
+
+		if (serverConf != null) {
+			serverConf.destroy();
+		}
 	}
 
 	@SuppressWarnings({"rawtypes", "unchecked"})

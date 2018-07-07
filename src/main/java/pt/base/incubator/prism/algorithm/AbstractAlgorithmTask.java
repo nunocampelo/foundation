@@ -33,12 +33,7 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 			return;
 		}
 
-		if (this.status == Status.FINISHED) {
-			LOGGER.debug("Status {} is final cant change it to {}", Status.CANCELED, status);
-			return;
-		}
-
-		if (this.status == Status.CANCELED) {
+		if (this.status == Status.FINISHED || this.status == Status.CANCELED) {
 			LOGGER.debug("Status {} is final cant change it to {}", Status.CANCELED, status);
 			return;
 		}
@@ -78,5 +73,9 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 
 	public enum Status {
 		CREATED, STARTED, FINISHED, CANCELED;
+
+		public boolean isFinal() {
+			return this == FINISHED || this == Status.CANCELED;
+		}
 	}
 }

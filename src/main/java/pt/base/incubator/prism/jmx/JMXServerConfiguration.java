@@ -6,7 +6,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -53,7 +52,6 @@ public class JMXServerConfiguration {
 				String.format(JMX_SERVICE_URL_PATTERN, jmxServerHost, jmxServerPort, jmxServerHost, jmxServerPort);
 	}
 
-	@PreDestroy
 	public void destroy() {
 		try {
 			jmxFactoryBean.destroy();
@@ -65,11 +63,9 @@ public class JMXServerConfiguration {
 	@Bean
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-	protected ExecutorService generateExecutorService(int maxThreads) {
-		// return new ThreadPoolExecutor(0, maxThreads, 0, TimeUnit.SECONDS, new
-		// SynchronousQueue<>());
-		// return Executors.newFixedThreadPool(6);
-		return Executors.newFixedThreadPool(1);
+	protected ExecutorService generateExecutorService(int numberExecutions) {
+		return Executors.newFixedThreadPool(6);
+		// return Executors.newFixedThreadPool(1);
 	}
 
 	@Bean
