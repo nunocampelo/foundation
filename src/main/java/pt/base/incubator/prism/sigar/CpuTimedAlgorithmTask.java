@@ -20,15 +20,14 @@ public class CpuTimedAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 	@Override
 	public Long call() throws Exception {
 
-		if (Thread.interrupted()) {
-			return null;
-		}
-
 		LOGGER.debug("Running with arg: {}", argument);
-		execute();
 
-		long result = sigar.getThreadCpu().getTotal();
-		LOGGER.debug("Finished with result: {}", result);
-		return result > 0 ? result : null;
+		boolean success = execute();
+		long cpuTime = sigar.getThreadCpu().getTotal();
+
+		LOGGER.debug("Executed with arg: {}, with result: {}, terminated: {}", argument, cpuTime, success);
+
+		result = cpuTime > 0 && success ? cpuTime : null;
+		return result;
 	}
 }

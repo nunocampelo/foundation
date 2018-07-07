@@ -113,7 +113,7 @@ public class AlgorithmTaskExecutor {
 			LOGGER.debug("Currently have {} results of wanted {}", currentNumberResults, minNumberOfResults);
 			algorithm.reset();
 
-			List<A> newArguments = produceArguments(algorithm::argumentProducer, minNumberOfResults);
+			List<A> newArguments = produceArguments(algorithm::argumentProducer, 6);
 			List<R> newResults = execute(algorithm, newArguments);
 
 			results.addAll(createEntryMapList(newArguments, newResults));

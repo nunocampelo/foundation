@@ -36,7 +36,7 @@ public class SigarConfiguration {
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	protected ExecutorService generateExecutorService(int maxThreads) {
-		return new ThreadPoolExecutor(0, maxThreads, 0, TimeUnit.SECONDS, new SynchronousQueue<>());
+		return new ThreadPoolExecutor(0, Math.min(maxThreads, 6), 0, TimeUnit.SECONDS, new SynchronousQueue<>());
 	}
 
 	@PreDestroy
