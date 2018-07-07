@@ -3,7 +3,7 @@ package pt.base.incubator.prism;
 import java.text.NumberFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +54,7 @@ public class Prism {
 
 	public void analyse() {
 
-		LOGGER.info("Starting PRISM... Buckle up for some awesome computing!");
+		LOGGER.info("Starting PRISM... Buckle up for some cool  computing!");
 
 		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardLinearAlgorithm);
 		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardQuadraticAlgorithm);
@@ -67,8 +67,6 @@ public class Prism {
 				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
 		List<Integer> degrees = Arrays.asList(1, 2, 3, 4, 5, 6, 7);
-		NumberFormat percentageFormat = NumberFormat.getPercentInstance();
-		percentageFormat.setMinimumFractionDigits(3);
 
 		algorithms.forEach(algorithm -> {
 
@@ -78,45 +76,66 @@ public class Prism {
 
 			LOGGER.info("Algorithm {}, CPU Times: {} ", algorithm, cpuTimesList);
 
-			// List<Entry<Long, Long>> withoutOutliers =
-			// dataProcessor.filterOutOutliers(cpuTimesList);
-			// LOGGER.info("CPU Times: {} ", withoutOutliers);
-			//
-			// Map<Long, Long> closestToMean =
-			// dataProcessor.getValuesClosestToMean(withoutOutliers);
-			// LOGGER.info("CPU Times: {} ", closestToMean);
+			List<Entry<Long, Long>> withoutOutliers = dataProcessor.filterOutOutliers(cpuTimesList);
+			LOGGER.info("CPU Times: {} ", withoutOutliers);
 
-			// degrees.stream().map(degree -> regressionProcessor.regress(cpuTimesList, degree))
-			// .reduce((Double curr, Double acc) -> {
-			// LOGGER.info("Regression degree: {}, R-square: 0.9673595377025922");
-			// return 0D;
-			// });
+			Map<Long, Long> closestToMean = dataProcessor.getValuesClosestToMean(withoutOutliers);
+			LOGGER.info("CPU Times: {} ", closestToMean);
 
 			if (destroyed) {
 				return;
 			}
 
-			Map<Integer, Double> test = new HashMap<>();
+			Map<Integer, Double> rSquareValues = new LinkedHashMap<>();
+			List<Double> changePercentages = new LinkedList<>();
 
 			degrees.forEach(d -> {
 
-				Integer index = degrees.indexOf(d);
-				double rSquare = regressionProcessor.regress(cpuTimesList, d);
-				test.put(d, rSquare);
+				int index = degrees.indexOf(d);
 
-				double ratio = 0;
+				double changePercentage = 0;
+				double rSquare = regressionProcessor.regress(cpuTimesList, d);
+
+				rSquareValues.put(d, rSquare);
 
 				if (index != 0) {
-					double prevRSquare = test.get(degrees.get(index - 1));
-					ratio = Math.abs(rSquare - prevRSquare) / prevRSquare;
+					double prevRSquare = rSquareValues.get(degrees.get(index - 1));
+					changePercentage = Math.abs(rSquare - prevRSquare) / prevRSquare;
 				}
 
-				LOGGER.info("Regression degree: {}, R-square: {}, Perc. change {}", d, rSquare,
-						percentageFormat.format(ratio));
-
+				changePercentages.add(changePercentage);
 			});
+
+			doLogRegressionResults(rSquareValues, changePercentages);
 		});
 
+	}
+
+	private void doLogRegressionResults(Map<Integer, Double> rSquareValues, List<Double> changePercentages) {
+
+		NumberFormat percentageFormat = NumberFormat.getPercentInstance();
+		percentageFormat.setMinimumFractionDigits(3);
+
+		int index = 0;
+		int size = rSquareValues.size();
+
+		double rSquare;
+		double nextCumChangePercentage = 0;
+
+		for (int degree : rSquareValues.keySet()) {
+
+			rSquare = rSquareValues.get(degree);
+
+			if (index < size - 1) {
+				nextCumChangePercentage += changePercentages.get(index + 1);
+			}
+
+			LOGGER.info("Regression degree: {}, R-square: {}, Perc. change: {}, Range: [{},{}[", degree, rSquare,
+					percentageFormat.format(changePercentages.get(index)), (1 - nextCumChangePercentage) * rSquare,
+					(1 + nextCumChangePercentage) * rSquare);
+
+			index++;
+		}
 	}
 
 	public void stop() {
