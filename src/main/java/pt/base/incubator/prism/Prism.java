@@ -14,6 +14,7 @@ import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import pt.base.incubator.numeric.regression.MultipleRegressionProcessor;
@@ -35,7 +36,9 @@ public class Prism {
 
 	private boolean destroyed;
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
+
+	@Value("${prism.algorithm.executions:30}")
+	private int numberAlgorithmExecutions;
 
 	@Autowired
 	private StandardLinearAlgorithm standardLinearAlgorithm;
@@ -74,7 +77,7 @@ public class Prism {
 		algorithms.forEach(algorithm -> {
 
 			List<Entry<Long, Long>> cpuTimesList =
-					toLongEntryList(algorithmExecuter.execute(algorithm, DEFAULT_NUMBER_ALGORITHM_EXECUTIONS));
+					toLongEntryList(algorithmExecuter.execute(algorithm, numberAlgorithmExecutions));
 			dataProcessor.sortByKey(cpuTimesList);
 
 			LOGGER.info("Algorithm {}, CPU Times: {} ", algorithm, cpuTimesList);
