@@ -22,7 +22,6 @@ public class ExecutionTimeLoggingAspect {
 
 		LOGGER.info("{} executed in {} seconds", method.getSignature(), executionTime / 1000D);
 		return result;
-
 	}
 
 }

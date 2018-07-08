@@ -18,10 +18,10 @@ import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 
 public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 
+	private MBeanServerConnection jmxServerConnection;
+	private static final Logger LOGGER = LoggerFactory.getLogger(JMXAlgorithmTask.class);
 	private static final String PROCESS_CPU_TIME_PROP_NAME = "ProcessCpuTime";
 	private static final String OPERATING_SYSTEM_OBJECT_NAME = "java.lang:type=OperatingSystem";
-	private static final Logger LOGGER = LoggerFactory.getLogger(JMXAlgorithmTask.class);
-	private MBeanServerConnection jmxServerConnection;
 
 	public JMXAlgorithmTask(MBeanServerConnection jmxServerConnection, AbstractAlgorithm<A> algorithm, A argument) {
 		super(algorithm, argument);

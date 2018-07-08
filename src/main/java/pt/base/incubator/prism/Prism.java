@@ -31,10 +31,11 @@ public class Prism {
 
 	public static final String JMX_PROFILE = "jmx";
 	public static final String SIGAR_PROFILE = "sigar";
+	public static final String ABSOLUTE_TIME = "absolute";
 
 	private boolean destroyed;
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 20;
+	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
 
 	@Autowired
 	private StandardLinearAlgorithm standardLinearAlgorithm;
