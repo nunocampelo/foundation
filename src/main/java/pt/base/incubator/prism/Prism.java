@@ -23,6 +23,7 @@ import pt.base.incubator.prism.algorithm.standard.StandardLinearAlgorithm;
 import pt.base.incubator.prism.algorithm.standard.StandardQuadraticAlgorithm;
 import pt.base.incubator.prism.algorithm.standard.StandardSixDegreeAlgorithm;
 import pt.base.incubator.prism.data.DataProcessor;
+import pt.base.incubator.prism.execution.LogExecutionTime;
 import pt.base.incubator.prism.jmx.JMXServerConfiguration;
 
 @Component
@@ -33,7 +34,7 @@ public class Prism {
 
 	private boolean destroyed;
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 50;
+	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 20;
 
 	@Autowired
 	private StandardLinearAlgorithm standardLinearAlgorithm;
@@ -52,9 +53,10 @@ public class Prism {
 	@Autowired(required = false)
 	private JMXServerConfiguration serverConf;
 
+	@LogExecutionTime
 	public void analyse() {
 
-		LOGGER.info("Starting PRISM... Buckle up for some cool  computing!");
+		LOGGER.info("Starting PRISM... Buckle up for some cool computing!");
 
 		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardLinearAlgorithm);
 		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardQuadraticAlgorithm);
