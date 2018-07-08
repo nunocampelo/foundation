@@ -33,8 +33,8 @@ public abstract class AbstractAlgorithmTask<A, R> implements Callable<R> {
 			return;
 		}
 
-		if (this.status == Status.FINISHED || this.status == Status.CANCELED) {
-			LOGGER.debug("Status {} is final cant change it to {}", Status.CANCELED, status);
+		if (this.status.isFinal()) {
+			LOGGER.debug("Status {} is final cant change it to {}", this.status, status);
 			return;
 		}
 

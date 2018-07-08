@@ -13,5 +13,6 @@ jmx:
     host: localhost
     port: 8081
     
-
-      
+machine:
+  cpu:
+    cores: 8    

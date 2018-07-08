@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import javax.annotation.PreDestroy;
 
 import org.hyperic.sigar.Sigar;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,9 @@ import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 @Profile(Prism.SIGAR_PROFILE)
 public class SigarConfiguration {
 
+	@Value("${machine.cpu.cores:8}")
+	private int cpuCores;
+
 	private Sigar sigar = new Sigar();
 
 	@Bean
@@ -34,9 +38,7 @@ public class SigarConfiguration {
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	protected ExecutorService generateExecutorService(int numberExecutions) {
-		// return new ThreadPoolExecutor(0, Math.min(numberExecutions, 6), 0, TimeUnit.SECONDS, new
-		// SynchronousQueue<>());
-		return Executors.newFixedThreadPool(6);
+		return Executors.newFixedThreadPool(cpuCores - 1);
 	}
 
 	@PreDestroy

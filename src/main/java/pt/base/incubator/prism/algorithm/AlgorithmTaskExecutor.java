@@ -24,7 +24,6 @@ import org.springframework.util.ObjectUtils;
 public class AlgorithmTaskExecutor {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AlgorithmTaskExecutor.class);
-
 	private static final int DEFAULT_ALGORITHM_TASK_EXECUTION_TIMEOUT_MILLIS = 2000;
 
 	private boolean destroyed;
@@ -34,16 +33,8 @@ public class AlgorithmTaskExecutor {
 	@Autowired
 	private BeanFactory beanFactory;
 
-	public TimeUnit getAlgorithmTaskTimeoutTimeUnit() {
-		return algorithmTaskTimeoutTimeUnit;
-	}
-
 	public void setAlgorithmTaskTimeoutTimeUnit(TimeUnit algorithmTaskTimeoutTimeUnit) {
 		this.algorithmTaskTimeoutTimeUnit = algorithmTaskTimeoutTimeUnit;
-	}
-
-	public long getAlgorithmTaskTimout() {
-		return algorithmTaskTimout;
 	}
 
 	public void setAlgorithmTaskTimout(long algorithmTaskTimout) {
@@ -90,15 +81,6 @@ public class AlgorithmTaskExecutor {
 		return doExtractResultsStream(tasks);
 	}
 
-	private <A, R> void doCancelRunningAlgorithmTasks(List<AbstractAlgorithmTask<A, R>> resultsFuture) {
-		resultsFuture.stream().filter(task -> task.getStatus().isFinal()).map(AbstractAlgorithmTask::getAlgorithm)
-				.forEach(AbstractAlgorithm::cancel);
-	}
-
-	private <A, R> List<R> doExtractResultsStream(List<AbstractAlgorithmTask<A, R>> resultsFuture) {
-		return resultsFuture.stream().map(AbstractAlgorithmTask::getResult).collect(Collectors.toList());
-	}
-
 	private <A, R> List<Map.Entry<A, R>> doExecuteUntilAtLeastNumberOfResults(AbstractAlgorithm<A> algorithm,
 			int minNumberOfResults) {
 
@@ -119,6 +101,15 @@ public class AlgorithmTaskExecutor {
 		}
 
 		return results;
+	}
+
+	private <A, R> void doCancelRunningAlgorithmTasks(List<AbstractAlgorithmTask<A, R>> resultsFuture) {
+		resultsFuture.stream().filter(task -> task.getStatus().isFinal()).map(AbstractAlgorithmTask::getAlgorithm)
+				.forEach(AbstractAlgorithm::cancel);
+	}
+
+	private <A, R> List<R> doExtractResultsStream(List<AbstractAlgorithmTask<A, R>> resultsFuture) {
+		return resultsFuture.stream().map(AbstractAlgorithmTask::getResult).collect(Collectors.toList());
 	}
 
 	private <A, R> List<Entry<A, R>> createEntryMapList(List<A> arguments, List<R> results) {

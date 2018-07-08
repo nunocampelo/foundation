@@ -31,7 +31,11 @@ import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
 @Profile(Prism.JMX_PROFILE)
 public class JMXServerConfiguration {
 
+	private static final String RMI_CONNECTOR_NAME = "connector:name=rmi";
 	private static final String JMX_SERVICE_URL_PATTERN = "service:jmx:rmi://%s:%s/jndi/rmi://%s:%s/jmxrmi";
+
+	@Value("${machine.cpu.cores:8}")
+	private int cpuCores;
 
 	@Value("${jmx.server.host:localhost}")
 	private String jmxServerHost;
@@ -52,20 +56,11 @@ public class JMXServerConfiguration {
 				String.format(JMX_SERVICE_URL_PATTERN, jmxServerHost, jmxServerPort, jmxServerHost, jmxServerPort);
 	}
 
-	public void destroy() {
-		try {
-			jmxFactoryBean.destroy();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
 	@Bean
 	@Lazy
 	@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	protected ExecutorService generateExecutorService(int numberExecutions) {
-		return Executors.newFixedThreadPool(6);
-		// return Executors.newFixedThreadPool(1);
+		return Executors.newFixedThreadPool(cpuCores - 2);
 	}
 
 	@Bean
@@ -92,7 +87,7 @@ public class JMXServerConfiguration {
 	public ConnectorServerFactoryBean factoryBeanFactory() throws Exception {
 
 		jmxFactoryBean = new ConnectorServerFactoryBean();
-		jmxFactoryBean.setObjectName("connector:name=rmi");
+		jmxFactoryBean.setObjectName(RMI_CONNECTOR_NAME);
 
 		jmxFactoryBean.setServiceUrl(jmxServerUrl);
 
@@ -114,13 +109,19 @@ public class JMXServerConfiguration {
 			jmxServerConnection = jmxc.getMBeanServerConnection();
 
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 		return jmxServerConnection;
+	}
+
+	public void destroy() {
+		try {
+			jmxFactoryBean.destroy();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

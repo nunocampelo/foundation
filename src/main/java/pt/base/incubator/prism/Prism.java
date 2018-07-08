@@ -33,7 +33,7 @@ public class Prism {
 
 	private boolean destroyed;
 	private static final Logger LOGGER = LoggerFactory.getLogger(Prism.class);
-	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 30;
+	private static final int DEFAULT_NUMBER_ALGORITHM_EXECUTIONS = 50;
 
 	@Autowired
 	private StandardLinearAlgorithm standardLinearAlgorithm;

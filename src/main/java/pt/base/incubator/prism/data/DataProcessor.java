@@ -24,6 +24,16 @@ public class DataProcessor {
 		data.sort(Comparator.comparing(Entry::getKey));
 	}
 
+	public <A> List<Entry<A, Long>> filterOutOutliers(List<Entry<A, Long>> source) {
+
+		OutliersStats<A> outliersStats = computeOutliersStats(source);
+		List<Entry<A, Long>> result = outliersStats.filterOutOutliers();
+
+		LOGGER.debug("Found {} outliers in {} results", source.size() - result.size(), source.size());
+
+		return result;
+	}
+
 	public <A> Map<A, Long> averageSameKeyResults(List<Entry<A, Long>> source) {
 
 		final Map<A, Long> results = new TreeMap<>();
@@ -89,16 +99,6 @@ public class DataProcessor {
 
 			return result;
 		});
-	}
-
-	public <A> List<Entry<A, Long>> filterOutOutliers(List<Entry<A, Long>> source) {
-
-		OutliersStats<A> outliersStats = computeOutliersStats(source);
-		List<Entry<A, Long>> result = outliersStats.filterOutOutliers();
-
-		LOGGER.debug("Found {} outliers in {} results", source.size() - result.size(), source.size());
-
-		return result;
 	}
 
 	private <A> OutliersStats<A> computeOutliersStats(List<Entry<A, Long>> source) {
