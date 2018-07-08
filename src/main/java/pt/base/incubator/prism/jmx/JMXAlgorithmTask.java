@@ -10,16 +10,12 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import pt.base.incubator.prism.algorithm.AbstractAlgorithm;
-import pt.base.incubator.prism.algorithm.AbstractAlgorithmTask;
+import pt.base.incubator.prism.algorithm.TimedAlgorithmTask;
 
-public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
+public class JMXAlgorithmTask<A> extends TimedAlgorithmTask<A> {
 
 	private MBeanServerConnection jmxServerConnection;
-	private static final Logger LOGGER = LoggerFactory.getLogger(JMXAlgorithmTask.class);
 	private static final String PROCESS_CPU_TIME_PROP_NAME = "ProcessCpuTime";
 	private static final String OPERATING_SYSTEM_OBJECT_NAME = "java.lang:type=OperatingSystem";
 
@@ -29,28 +25,7 @@ public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 	}
 
 	@Override
-	public Long call() throws Exception {
-
-		long cpuTime = getCurrentCpuTime();
-		LOGGER.debug("Running with arg: {}, stating at: {}", argument, cpuTime);
-
-		boolean finished = execute();
-
-		long endCpuTime = getCurrentCpuTime();
-		cpuTime = endCpuTime - cpuTime;
-
-		LOGGER.debug("Executed with arg: {}, with cpu time: {}, ended at: {}, finished: {}", argument, cpuTime,
-				endCpuTime, finished);
-
-		if (cpuTime <= 0L) {
-			LOGGER.info("Illegal CPU time found: {}, with arg: {}", cpuTime, argument);
-		}
-
-		result = finished && cpuTime > 0 ? cpuTime : null;
-		return result;
-	}
-
-	private long getCurrentCpuTime() {
+	protected long getCurrentTime() {
 
 		long cpuTime = 0;
 
@@ -64,5 +39,4 @@ public class JMXAlgorithmTask<A> extends AbstractAlgorithmTask<A, Long> {
 
 		return cpuTime;
 	}
-
 }
