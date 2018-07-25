@@ -62,13 +62,6 @@ public class Prism {
 
 		LOGGER.info("Starting PRISM... Buckle up for some cool computing!");
 
-		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardLinearAlgorithm);
-		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardQuadraticAlgorithm);
-		// List<AbstractAlgorithm<Long>> algorithms = Arrays.asList(standardSixDegreeAlgorithm);
-
-		// List<AbstractAlgorithm<Long>> algorithms =
-		// Arrays.asList(standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
-
 		List<AbstractAlgorithm<Long>> algorithms =
 				Arrays.asList(standardLinearAlgorithm, standardQuadraticAlgorithm, standardSixDegreeAlgorithm);
 
@@ -114,7 +107,6 @@ public class Prism {
 
 			doLogRegressionResults(rSquareValues, changePercentages);
 		});
-
 	}
 
 	private void doLogRegressionResults(Map<Integer, Double> rSquareValues, List<Double> changePercentages) {
