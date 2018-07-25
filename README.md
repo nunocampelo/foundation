@@ -1,5 +1,5 @@
 # incubator project
-#### spawning new cool projects
+#### spawning cool new java projects
 <br/>
 
 # prism
