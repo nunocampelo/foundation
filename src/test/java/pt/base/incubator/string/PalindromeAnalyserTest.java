@@ -5,11 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import pt.base.incubator.string.PalindromeChecker;
+public class PalindromeAnalyserTest {
 
-public class PalindromeCheckerTest {
-
-	private PalindromeChecker tester = new PalindromeChecker();
+	private PalindromeAnalyser tester = new PalindromeAnalyser();
 
 	@Test
 	public void isPalindromeOfSingleLenghtWorkShouldReturnTrue() {

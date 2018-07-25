@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 @Service
-public class PalindromeChecker {
+public class PalindromeAnalyser {
 
 	public boolean isPalindrome(String str) {
 
